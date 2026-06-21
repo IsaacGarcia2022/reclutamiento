@@ -5,7 +5,8 @@
 @layer base {
   body {
     min-height: 100vh;
-    color: #25211d;
+    background-color: #f4f7f8;
+    color: #263238;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-family: 'Inter', sans-serif;
@@ -16,8 +17,8 @@
   }
 
   ::selection {
-    background-color: #abe5de;
-    color: #094a44;
+    background-color: #d7e6eb;
+    color: #103b4a;
   }
 }
 
@@ -33,7 +34,7 @@
   .btn:focus {
     outline: none;
     --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-    box-shadow: var(--tw-ring-offset-shadow), 0 0 0 calc(2px + var(--tw-ring-offset-width)) #4dbdb0, var(--tw-ring-shadow, 0 0 #0000);
+    box-shadow: var(--tw-ring-offset-shadow), 0 0 0 calc(2px + var(--tw-ring-offset-width)) #5e8291, var(--tw-ring-shadow, 0 0 #0000);
     --tw-ring-offset-width: 2px;
   }
   .btn:disabled {
@@ -48,16 +49,16 @@
     border-radius: 0.75rem;
     font-weight: 600;
     transition: all 0.2s;
-    background-color: #0d8c81;
+    background-color: #18566b;
     color: white;
-    --tw-shadow: 0 10px 15px -3px rgb(171 229 222 / 0.5), 0 4px 6px -4px rgb(171 229 222 / 0.5);
+    --tw-shadow: 0 10px 15px -3px rgb(24 86 107 / 0.2), 0 4px 6px -4px rgb(24 86 107 / 0.12);
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   }
   .btn-primary:hover {
-    background-color: #0a6e65;
+    background-color: #134858;
   }
   .btn-primary:active {
-    background-color: #0a5851;
+    background-color: #103b4a;
   }
 
   .btn-secondary {
@@ -67,14 +68,14 @@
     border-radius: 0.75rem;
     font-weight: 600;
     transition: all 0.2s;
-    border: 2px solid #0d8c81;
-    color: #0d8c81;
+    border: 2px solid #18566b;
+    color: #18566b;
   }
   .btn-secondary:hover {
-    background-color: #eefaf8;
+    background-color: #edf4f6;
   }
   .btn-secondary:active {
-    background-color: #d5f2ef;
+    background-color: #d7e6eb;
   }
 
   .btn-accent {
@@ -84,16 +85,16 @@
     border-radius: 0.75rem;
     font-weight: 600;
     transition: all 0.2s;
-    background-color: #e85c3e;
+    background-color: #c79a52;
     color: white;
-    --tw-shadow: 0 10px 15px -3px rgb(244 195 175 / 0.5), 0 4px 6px -4px rgb(244 195 175 / 0.5);
+    --tw-shadow: 0 10px 15px -3px rgb(199 154 82 / 0.28), 0 4px 6px -4px rgb(199 154 82 / 0.16);
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   }
   .btn-accent:hover {
-    background-color: #cc4623;
+    background-color: #ad7e3d;
   }
   .btn-accent:active {
-    background-color: #aa371d;
+    background-color: #8f6532;
   }
 
   .card {
@@ -106,23 +107,23 @@
     width: 100%;
     border-radius: 0.75rem;
     border-width: 1px;
-    border-color: #e6e2dc;
+    border-color: #d7e0e3;
     background-color: white;
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
     line-height: 1.25rem;
-    color: #25211d;
+    color: #263238;
     outline: none;
     transition: all 0.2s;
     font-family: 'Inter', sans-serif;
   }
   .input-field::placeholder {
-    color: #a69b8e;
+    color: #96a8ae;
   }
   .input-field:focus {
-    border-color: #4dbdb0;
+    border-color: #5e8291;
     --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) #d5f2ef;
+    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) #d7e6eb;
     box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-ring-shadow, 0 0 #0000);
   }
 }

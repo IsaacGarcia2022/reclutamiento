@@ -12,11 +12,7 @@ const routes = [
   {
     path: '/admin',
     component: () => import('../views/admin/AdminLayout.vue'),
-    beforeEnter: (to, from, next) => {
-      const auth = useAuthStore()
-      if (!auth.isAuthenticated) return next('/login')
-      next()
-    },
+    meta: { requiresAuth: true, allowedRoles: ['administrador', 'recursos_humanos', 'consulta'] },
     children: [
       { path: '', name: 'AdminDashboard', component: () => import('../views/admin/AdminDashboard.vue') },
       { path: 'vacantes', name: 'VacancyManager', component: () => import('../views/admin/VacancyManager.vue') },
@@ -30,6 +26,21 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+router.beforeEach(async (to) => {
+  const requiresAuth = to.matched.some(route => route.meta.requiresAuth)
+  if (!requiresAuth) return true
+
+  const auth = useAuthStore()
+  await auth.initialize()
+
+  if (!auth.isAuthenticated) return { name: 'Login' }
+
+  const allowedRoles = to.matched.flatMap(route => route.meta.allowedRoles || [])
+  if (allowedRoles.length && !allowedRoles.includes(auth.currentUser.role)) return { name: 'Landing' }
+
+  return true
 })
 
 export default router

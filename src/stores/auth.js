@@ -3,8 +3,10 @@ import AuthService from '../services/AuthService'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: AuthService.getSession(),
-    error: null
+    user: null,
+    error: null,
+    initialized: false,
+    loading: false
   }),
 
   getters: {
@@ -13,6 +15,22 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    async initialize () {
+      if (this.initialized) return
+
+      this.loading = true
+      try {
+        this.user = AuthService.isConfigured ? await AuthService.getCurrentUser() : null
+        this.error = null
+      } catch (e) {
+        this.user = null
+        this.error = e.message
+      } finally {
+        this.loading = false
+        this.initialized = true
+      }
+    },
+
     async register (payload) {
       try {
         this.user = await AuthService.register(payload)
@@ -25,6 +43,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async login (email, password) {
+      this.loading = true
       try {
         this.user = await AuthService.login(email, password)
         this.error = null
@@ -32,12 +51,17 @@ export const useAuthStore = defineStore('auth', {
       } catch (e) {
         this.error = e.message
         return false
+      } finally {
+        this.loading = false
       }
     },
 
-    logout () {
-      AuthService.logout()
-      this.user = null
+    async logout () {
+      try {
+        if (AuthService.isConfigured) await AuthService.logout()
+      } finally {
+        this.user = null
+      }
     },
 
     clearError () {
