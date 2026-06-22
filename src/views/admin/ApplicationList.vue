@@ -17,6 +17,8 @@ const selectedApp = ref(null)
 const previewCvUrl = ref(null)
 const observationText = ref('')
 const savingObservation = ref(false)
+const candidateAnswers = ref([])
+const loadingAnswers = ref(false)
 
 const counts = computed(() => {
   const list = apps.value || []
@@ -43,6 +45,16 @@ onMounted(async () => {
 async function viewDetails (app) {
   selectedApp.value = app
   observationText.value = app.internalObservation || ''
+  
+  candidateAnswers.value = []
+  loadingAnswers.value = true
+  try {
+    candidateAnswers.value = await ApplicationService.getAnswers(app.id)
+  } catch (e) {
+    console.error('Error cargando respuestas complementarias:', e)
+  } finally {
+    loadingAnswers.value = false
+  }
 }
 
 async function previewCv (app) {
@@ -319,6 +331,35 @@ function exportToCsv () {
             <p class="text-stone-600 bg-stone-50 rounded-xl p-4 leading-relaxed font-body italic">
               "{{ selectedApp.message }}"
             </p>
+          </div>
+
+          <!-- Carga de respuestas a preguntas adicionales -->
+          <div v-if="loadingAnswers" class="border-t border-stone-100 pt-4 py-4 text-center">
+            <div class="w-5 h-5 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto"></div>
+            <p class="text-xs text-stone-400 mt-2 font-body">Cargando respuestas complementarias...</p>
+          </div>
+
+          <div v-else-if="candidateAnswers.length > 0" class="border-t border-stone-100 pt-4 space-y-3">
+            <h4 class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Respuestas a Preguntas de la Oferta</h4>
+            <div class="space-y-2.5 font-body">
+              <div v-for="ans in candidateAnswers" :key="ans.id" class="bg-stone-50 border border-stone-150 rounded-xl p-3">
+                <p class="text-xs font-semibold text-stone-700 leading-normal">{{ ans.question }}</p>
+                <p class="text-sm text-stone-600 mt-1.5 font-medium leading-relaxed">
+                  <template v-if="ans.type === 'si_no'">
+                    <span class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full" 
+                      :class="ans.value ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'">
+                      {{ ans.value ? 'Sí' : 'No' }}
+                    </span>
+                  </template>
+                  <template v-else-if="ans.type === 'seleccion_multiple' && Array.isArray(ans.value)">
+                    {{ ans.value.join(', ') }}
+                  </template>
+                  <template v-else>
+                    {{ ans.value }}
+                  </template>
+                </p>
+              </div>
+            </div>
           </div>
 
           <!-- Currículum -->

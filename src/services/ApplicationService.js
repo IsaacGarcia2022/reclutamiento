@@ -63,9 +63,11 @@ export default {
     return data.map(mapApplication)
   },
 
-  async create (data) {
+  async create (data, answers) {
     const client = getSupabaseClient()
+    const applicationId = crypto.randomUUID()
     const payload = {
+      id: applicationId,
       vacante_id: data.vacancyId,
       candidato_id: data.candidateId || null,
       nombres: data.firstName,
@@ -93,7 +95,20 @@ export default {
       .insert(payload)
 
     if (error) throw error
-    return { vacancyId: data.vacancyId }
+
+    if (answers && answers.length > 0) {
+      const answersPayload = answers.map(ans => ({
+        application_id: applicationId,
+        question_id: ans.questionId,
+        respuesta: ans.value
+      }))
+      const { error: ansError } = await client
+        .from('application_answers')
+        .insert(answersPayload)
+      if (ansError) throw ansError
+    }
+
+    return { id: applicationId, vacancyId: data.vacancyId }
   },
 
   async updateStatus (id, status, reviewerId) {
@@ -152,5 +167,23 @@ export default {
 
     if (error) throw error
     return data.signedUrl
+  },
+
+  async getAnswers (applicationId) {
+    const client = getSupabaseClient()
+    const { data, error } = await client
+      .from('application_answers')
+      .select('*, question:question_id(pregunta, tipo_respuesta, opciones)')
+      .eq('application_id', applicationId)
+
+    if (error) throw error
+    return data.map(ans => ({
+      id: ans.id,
+      questionId: ans.question_id,
+      question: ans.question?.pregunta || '',
+      type: ans.question?.tipo_respuesta || '',
+      options: ans.question?.opciones || null,
+      value: ans.respuesta
+    }))
   }
 }

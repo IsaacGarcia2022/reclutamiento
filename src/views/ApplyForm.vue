@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useVacanciesStore } from '../stores/vacancies'
 import { useApplicationsStore } from '../stores/applications'
 import VacancyService from '../services/VacancyService'
+import VacancyQuestionsService from '../services/VacancyQuestionsService'
 import AppInput from '../components/AppInput.vue'
 import AppSelect from '../components/AppSelect.vue'
 import AppTextarea from '../components/AppTextarea.vue'
@@ -21,6 +22,14 @@ const showOptional = ref(false)
 const academicLevels = ref([])
 const recruitmentSources = ref([])
 const rawCvFile = ref(null)
+
+const dynamicQuestions = ref([])
+const dynamicAnswers = ref({})
+
+const getSelectOptions = (optionsArray) => {
+  if (!Array.isArray(optionsArray)) return []
+  return optionsArray.map(opt => ({ value: opt, label: opt }))
+}
 
 const form = ref({
   firstName: '',
@@ -62,6 +71,21 @@ onMounted(async () => {
         form.value.recruitmentSourceId = matchedSource.id
       }
     }
+
+    // Cargar preguntas adicionales configuradas
+    const qs = await VacancyQuestionsService.getByVacancy(route.params.id)
+    dynamicQuestions.value = qs.filter(q => q.activo)
+
+    // Inicializar respuestas dinámicas
+    dynamicQuestions.value.forEach(q => {
+      if (q.tipo_respuesta === 'seleccion_multiple') {
+        dynamicAnswers.value[q.id] = []
+      } else if (q.tipo_respuesta === 'si_no') {
+        dynamicAnswers.value[q.id] = null
+      } else {
+        dynamicAnswers.value[q.id] = ''
+      }
+    })
   } catch (e) {
     console.error('Error cargando los catálogos de base de datos:', e)
   }
@@ -115,6 +139,26 @@ function validate () {
   if (!rawCvFile.value) errs.cvFile = 'Es obligatorio adjuntar tu currículum vitae'
   if (!form.value.privacyConsent) errs.privacyConsent = 'Debes otorgar tu consentimiento de privacidad para postularte'
   
+  // Validaciones de preguntas adicionales
+  dynamicQuestions.value.forEach(q => {
+    const val = dynamicAnswers.value[q.id]
+    if (q.obligatoria) {
+      if (q.tipo_respuesta === 'seleccion_multiple') {
+        if (!val || val.length === 0) {
+          errs[`q_${q.id}`] = 'Esta pregunta es obligatoria'
+        }
+      } else if (q.tipo_respuesta === 'si_no') {
+        if (val === null || val === undefined) {
+          errs[`q_${q.id}`] = 'Esta pregunta es obligatoria'
+        }
+      } else {
+        if (val === undefined || val === null || val.toString().trim() === '') {
+          errs[`q_${q.id}`] = 'Esta pregunta es obligatoria'
+        }
+      }
+    }
+  })
+  
   // Validaciones opcionales (si se rellenan)
   if (form.value.portfolioUrl.trim() && !/^https?:\/\/[^\s$.?#].[^\s]*$/i.test(form.value.portfolioUrl)) {
     errs.portfolioUrl = 'El enlace de portafolio debe ser una URL válida (con http:// o https://)'
@@ -136,10 +180,18 @@ function validate () {
 async function submit () {
   if (!validate()) return
   
+  // Mapear respuestas a payload
+  const formattedAnswers = Object.keys(dynamicAnswers.value).map(qId => {
+    return {
+      questionId: qId,
+      value: dynamicAnswers.value[qId]
+    }
+  })
+
   const app = await applications.submit({
     ...form.value,
     vacancyId: route.params.id
-  }, rawCvFile.value)
+  }, rawCvFile.value, formattedAnswers)
   
   if (app) {
     success.value = true
@@ -230,6 +282,79 @@ async function submit () {
                 <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 Archivo: {{ form.cvFileName }}
               </p>
+            </div>
+          </div>
+
+          <!-- SECCIÓN: Preguntas Complementarias de la Vacante (Dinámicas) -->
+          <div v-if="dynamicQuestions.length > 0" class="space-y-5 border-t border-stone-200 pt-6">
+            <h3 class="font-display font-semibold text-stone-800 border-b border-stone-100 pb-2 text-base">Preguntas Adicionales</h3>
+            
+            <div v-for="q in dynamicQuestions" :key="q.id" class="space-y-1.5 bg-stone-50/50 p-4 rounded-xl border border-stone-150">
+              
+              <!-- Texto Corto -->
+              <AppInput v-if="q.tipo_respuesta === 'texto_corto'" 
+                v-model="dynamicAnswers[q.id]" 
+                :label="q.pregunta + (q.obligatoria ? ' *' : '')" 
+                :error="errors['q_' + q.id]" 
+                placeholder="Escribe tu respuesta..." />
+
+              <!-- Texto Largo -->
+              <AppTextarea v-else-if="q.tipo_respuesta === 'texto_largo'" 
+                v-model="dynamicAnswers[q.id]" 
+                :label="q.pregunta + (q.obligatoria ? ' *' : '')" 
+                :error="errors['q_' + q.id]" 
+                :rows="3" 
+                placeholder="Escribe una respuesta detallada..." />
+
+              <!-- Número -->
+              <AppInput v-else-if="q.tipo_respuesta === 'numero'" 
+                v-model="dynamicAnswers[q.id]" 
+                type="number"
+                :label="q.pregunta + (q.obligatoria ? ' *' : '')" 
+                :error="errors['q_' + q.id]" 
+                placeholder="Ingresa un número..." />
+
+              <!-- Fecha -->
+              <AppInput v-else-if="q.tipo_respuesta === 'fecha'" 
+                v-model="dynamicAnswers[q.id]" 
+                type="date"
+                :label="q.pregunta + (q.obligatoria ? ' *' : '')" 
+                :error="errors['q_' + q.id]" />
+
+              <!-- Selección Única -->
+              <AppSelect v-else-if="q.tipo_respuesta === 'seleccion_unica'" 
+                v-model="dynamicAnswers[q.id]" 
+                :label="q.pregunta + (q.obligatoria ? ' *' : '')" 
+                :options="getSelectOptions(q.opciones)" 
+                placeholder="Seleccionar opción..."
+                :error="errors['q_' + q.id]" />
+
+              <!-- Sí / No -->
+              <div v-else-if="q.tipo_respuesta === 'si_no'" class="space-y-1.5">
+                <label class="block text-sm font-medium text-stone-700 font-body">{{ q.pregunta }} <span v-if="q.obligatoria" class="text-red-500">*</span></label>
+                <div class="flex gap-4 items-center pt-1">
+                  <label class="flex items-center gap-1.5 text-sm font-body cursor-pointer select-none">
+                    <input type="radio" :name="'q_' + q.id" :value="true" v-model="dynamicAnswers[q.id]" class="rounded-full text-brand-600 focus:ring-brand-500" /> Sí
+                  </label>
+                  <label class="flex items-center gap-1.5 text-sm font-body cursor-pointer select-none">
+                    <input type="radio" :name="'q_' + q.id" :value="false" v-model="dynamicAnswers[q.id]" class="rounded-full text-brand-600 focus:ring-brand-500" /> No
+                  </label>
+                </div>
+                <p v-if="errors['q_' + q.id]" class="text-xs text-red-500 font-body">{{ errors['q_' + q.id] }}</p>
+              </div>
+
+              <!-- Selección Múltiple -->
+              <div v-else-if="q.tipo_respuesta === 'seleccion_multiple'" class="space-y-1.5">
+                <label class="block text-sm font-medium text-stone-700 font-body">{{ q.pregunta }} <span v-if="q.obligatoria" class="text-red-500">*</span></label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  <label v-for="opt in q.opciones" :key="opt" class="flex items-center gap-2 text-sm font-body cursor-pointer select-none">
+                    <input type="checkbox" :value="opt" v-model="dynamicAnswers[q.id]" class="rounded border-stone-300 text-brand-600 focus:ring-brand-500" />
+                    {{ opt }}
+                  </label>
+                </div>
+                <p v-if="errors['q_' + q.id]" class="text-xs text-red-500 font-body">{{ errors['q_' + q.id] }}</p>
+              </div>
+
             </div>
           </div>
 

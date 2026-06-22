@@ -29,8 +29,9 @@ const routes = [
       { path: 'vacantes/:id/postulaciones', name: 'ApplicationList', component: () => import('../views/admin/ApplicationList.vue'), props: true },
       { path: 'usuarios', name: 'UserManager', component: () => import('../views/admin/UserManager.vue'), meta: { allowedRoles: ['administrador'] } },
       { path: 'usuarios/nuevo', name: 'UserCreate', component: () => import('../views/admin/UserForm.vue'), meta: { allowedRoles: ['administrador'] } },
-      { path: 'usuarios/:id/editar', name: 'UserEdit', component: () => import('../views/admin/UserForm.vue'), props: true, meta: { allowedRoles: ['administrador'] } }
-      , { path: 'empresa', name: 'CompanySettings', component: () => import('../views/admin/CompanySettings.vue'), meta: { allowedRoles: ['administrador'] } }
+      { path: 'usuarios/:id/editar', name: 'UserEdit', component: () => import('../views/admin/UserForm.vue'), props: true, meta: { allowedRoles: ['administrador'] } },
+      { path: 'empresa', name: 'CompanySettings', component: () => import('../views/admin/CompanySettings.vue'), meta: { allowedRoles: ['administrador'] } },
+      { path: 'candidatos', name: 'CandidatePool', component: () => import('../views/admin/CandidatePool.vue') }
     ]
   }
 ]

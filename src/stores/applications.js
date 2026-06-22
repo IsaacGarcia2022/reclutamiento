@@ -44,7 +44,7 @@ export const useApplicationsStore = defineStore('applications', {
       }
     },
 
-    async submit (data, file) {
+    async submit (data, file, answers) {
       this.loading = true
       try {
         let cvPath = data.cv
@@ -54,7 +54,7 @@ export const useApplicationsStore = defineStore('applications', {
         const app = await ApplicationService.create({
           ...data,
           cv: cvPath
-        })
+        }, answers)
         if (app && app.id) {
           const vid = app.vacancyId
           if (!this.byVacancy[vid]) this.byVacancy[vid] = []
