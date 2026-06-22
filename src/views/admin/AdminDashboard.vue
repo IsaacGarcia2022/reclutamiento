@@ -14,7 +14,7 @@ onMounted(async () => {
 })
 
 const myVacancies = computed(() => vacancies.list)
-const activeCount = computed(() => myVacancies.value.filter(v => v.status === 'active').length)
+const activeCount = computed(() => myVacancies.value.filter(v => v.status === 'publicada').length)
 const totalApps = computed(() => Object.values(applications.byVacancy).flat().length)
 </script>
 

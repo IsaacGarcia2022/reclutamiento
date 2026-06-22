@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --company-primary: #18566b;
+    --company-secondary: #638579;
+  }
   body {
     min-height: 100vh;
     background-color: #f4f7f8;
@@ -49,7 +53,7 @@
     border-radius: 0.75rem;
     font-weight: 600;
     transition: all 0.2s;
-    background-color: #18566b;
+    background-color: var(--company-primary);
     color: white;
     --tw-shadow: 0 10px 15px -3px rgb(24 86 107 / 0.2), 0 4px 6px -4px rgb(24 86 107 / 0.12);
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -68,8 +72,8 @@
     border-radius: 0.75rem;
     font-weight: 600;
     transition: all 0.2s;
-    border: 2px solid #18566b;
-    color: #18566b;
+    border: 2px solid var(--company-primary);
+    color: var(--company-primary);
   }
   .btn-secondary:hover {
     background-color: #edf4f6;

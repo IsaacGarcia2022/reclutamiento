@@ -86,7 +86,7 @@ async function submit () {
       </router-link>
     </div>
 
-    <div v-else>
+    <div v-else-if="v.status === 'publicada'">
       <router-link :to="`/vacantes/${v.id}`" class="inline-flex items-center gap-1.5 text-sm font-medium text-stone-500 hover:text-brand-600 transition-colors mb-6">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         Volver a la vacante
@@ -122,5 +122,6 @@ async function submit () {
         </form>
       </div>
     </div>
+    <div v-else class="card border border-stone-100 p-10 text-center"><p class="font-medium text-stone-700">Esta vacante ya no acepta nuevas postulaciones.</p><router-link to="/vacantes" class="mt-4 inline-block text-sm font-semibold text-brand-600">Ver otras vacantes</router-link></div>
   </div>
 </template>

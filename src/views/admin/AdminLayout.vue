@@ -39,6 +39,18 @@ function logout () {
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             Mis vacantes
           </router-link>
+          <router-link v-if="auth.currentUser?.role === 'administrador'" to="/admin/usuarios"
+            class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+            :class="$route.path.startsWith('/admin/usuarios') ? 'bg-brand-50 text-brand-700' : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V9a2 2 0 00-2-2h-3m0 13H7m10 0v-2c0-1.105-.895-2-2-2H9c-1.105 0-2 .895-2 2v2m0 0H2V9a2 2 0 012-2h3m10 0V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2m0 0h10M9 11h6"/></svg>
+            Usuarios
+          </router-link>
+          <router-link v-if="auth.currentUser?.role === 'administrador'" to="/admin/empresa"
+            class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+            :class="$route.path.startsWith('/admin/empresa') ? 'bg-brand-50 text-brand-700' : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 9h.01M15 9h.01M9 12h.01M15 12h.01"/></svg>
+            Empresa
+          </router-link>
         </nav>
       </aside>
 
