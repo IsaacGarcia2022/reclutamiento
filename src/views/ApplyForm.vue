@@ -7,6 +7,7 @@ import VacancyService from '../services/VacancyService'
 import VacancyQuestionsService from '../services/VacancyQuestionsService'
 import DocumentService from '../services/DocumentService'
 import NotificationService from '../services/NotificationService'
+import CompanyService from '../services/CompanyService'
 import AppInput from '../components/AppInput.vue'
 import AppSelect from '../components/AppSelect.vue'
 import AppTextarea from '../components/AppTextarea.vue'
@@ -52,7 +53,9 @@ const form = ref({
   portfolioFileName: '',
   certificateFileName: '',
   otherFileName: '',
-  privacyConsent: false,
+  consentPrivacyPolicy: false,
+  consentDataTreatment: false,
+  consentCvConservation: false,
   identityDocument: '',
   yearsExperience: '',
   lastPosition: '',
@@ -64,9 +67,13 @@ const form = ref({
   recruitmentSourceId: ''
 })
 
+const companySettings = ref(null)
+const showPrivacyModal = ref(false)
+
 onMounted(async () => {
   await vacancies.fetchById(route.params.id)
   try {
+    companySettings.value = await CompanyService.get()
     const cats = await VacancyService.catalogs()
     academicLevels.value = cats
       .filter(c => c.categoria === 'nivel_academico' && c.activo)
@@ -174,7 +181,8 @@ function validate () {
   if (!form.value.profession.trim()) errs.profession = 'La profesión u oficio es obligatoria'
   
   if (!rawCvFile.value) errs.cvFile = 'Es obligatorio adjuntar tu currículum vitae'
-  if (!form.value.privacyConsent) errs.privacyConsent = 'Debes otorgar tu consentimiento de privacidad para postularte'
+  if (!form.value.consentPrivacyPolicy) errs.consentPrivacyPolicy = 'Debes leer y aceptar la política de privacidad'
+  if (!form.value.consentDataTreatment) errs.consentDataTreatment = 'Debes autorizar el tratamiento de tus datos personales'
   
   // Validaciones de preguntas adicionales
   dynamicQuestions.value.forEach(q => {
@@ -232,10 +240,31 @@ async function submit () {
     otro: rawOtherFile.value
   }
 
+  // Preparar los consentimientos de privacidad
+  const consents = [
+    {
+      aceptado: true,
+      tipo_consentimiento: 'politica_privacidad',
+      version_documento: companySettings.value?.versionPoliticaPrivacidad || '1.0'
+    },
+    {
+      aceptado: true,
+      tipo_consentimiento: 'tratamiento_datos',
+      version_documento: companySettings.value?.versionPoliticaPrivacidad || '1.0'
+    }
+  ]
+  if (form.value.consentCvConservation) {
+    consents.push({
+      aceptado: true,
+      tipo_consentimiento: 'conservacion_curriculum',
+      version_documento: companySettings.value?.versionPoliticaPrivacidad || '1.0'
+    })
+  }
+
   const app = await applications.submit({
     ...form.value,
     vacancyId: route.params.id
-  }, rawCvFile.value, formattedAnswers, optionalFiles)
+  }, rawCvFile.value, formattedAnswers, optionalFiles, consents)
   
   if (app) {
     success.value = true
@@ -486,23 +515,82 @@ async function submit () {
           </div>
 
           <!-- SECCIÓN: Consentimiento y Envío -->
-          <div class="space-y-4 pt-2">
+          <div class="space-y-4 pt-4 border-t border-stone-100">
+            <h4 class="font-display font-semibold text-stone-850 text-sm">Privacidad y Consentimiento de Datos</h4>
+            
+            <!-- Checkbox 1: Política de Privacidad -->
+            <div class="space-y-1">
+              <div class="flex items-start gap-3">
+                <input type="checkbox" id="consentPrivacy" v-model="form.consentPrivacyPolicy" 
+                  class="w-4 h-4 mt-0.5 rounded border-stone-300 text-brand-600 focus:ring-brand-500 focus:ring-offset-0 transition-colors" />
+                <label for="consentPrivacy" class="text-xs text-stone-600 font-body cursor-pointer select-none leading-relaxed">
+                  He leído y acepto la 
+                  <button type="button" @click="showPrivacyModal = true" class="text-brand-600 underline font-medium hover:text-brand-700 inline focus:outline-none bg-transparent border-none p-0 cursor-pointer">política de privacidad</button> de la empresa. *
+                </label>
+              </div>
+              <p v-if="errors.consentPrivacyPolicy" class="text-xs text-red-500 font-body ml-7">{{ errors.consentPrivacyPolicy }}</p>
+            </div>
+
+            <!-- Checkbox 2: Tratamiento de Datos -->
+            <div class="space-y-1">
+              <div class="flex items-start gap-3">
+                <input type="checkbox" id="consentData" v-model="form.consentDataTreatment" 
+                  class="w-4 h-4 mt-0.5 rounded border-stone-300 text-brand-600 focus:ring-brand-500 focus:ring-offset-0 transition-colors" />
+                <label for="consentData" class="text-xs text-stone-600 font-body cursor-pointer select-none leading-relaxed">
+                  Autorizo el tratamiento de mis datos personales para los fines exclusivos del proceso de selección y contratación laboral para esta vacante, conforme a los 
+                  <router-link to="/terminos-de-postulacion" target="_blank" class="text-brand-600 underline font-medium hover:text-brand-700">términos de postulación</router-link>. *
+                </label>
+              </div>
+              <p v-if="errors.consentDataTreatment" class="text-xs text-red-500 font-body ml-7">{{ errors.consentDataTreatment }}</p>
+            </div>
+
+            <!-- Checkbox 3: Conservación de Curriculum -->
             <div class="flex items-start gap-3">
-              <input type="checkbox" id="consent" v-model="form.privacyConsent" 
+              <input type="checkbox" id="consentCv" v-model="form.consentCvConservation" 
                 class="w-4 h-4 mt-0.5 rounded border-stone-300 text-brand-600 focus:ring-brand-500 focus:ring-offset-0 transition-colors" />
-              <label for="consent" class="text-xs text-stone-600 font-body cursor-pointer select-none leading-relaxed">
-                Autorizo el tratamiento de mis datos personales para los fines exclusivos del proceso de selección y contratación laboral, de conformidad con los 
-                <router-link to="/terminos-de-postulacion" target="_blank" class="text-brand-600 underline font-medium hover:text-brand-700">términos de postulación</router-link> y la 
-                <router-link to="/politica-de-privacidad" target="_blank" class="text-brand-600 underline font-medium hover:text-brand-700">política de privacidad</router-link>. *
+              <label for="consentCv" class="text-xs text-stone-600 font-body cursor-pointer select-none leading-relaxed">
+                Autorizo a la empresa a conservar mi currículum vitae y datos personales para futuros procesos de selección de personal (Opcional).
               </label>
             </div>
-            <p v-if="errors.privacyConsent" class="text-xs text-red-500 font-body">{{ errors.privacyConsent }}</p>
 
             <button type="submit" :disabled="applications.loading"
-              class="btn-accent w-full py-3.5 text-base flex items-center justify-center gap-2">
+              class="btn-accent w-full py-3.5 text-base flex items-center justify-center gap-2 mt-4">
               <svg v-if="applications.loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
               {{ applications.loading ? 'Enviando Postulación...' : 'Enviar Postulación' }}
             </button>
+          </div>
+
+          <!-- Modal de Política de Privacidad -->
+          <div v-if="showPrivacyModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div class="fixed inset-0 bg-stone-900 bg-opacity-75 transition-opacity" @click="showPrivacyModal = false"></div>
+              <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+              <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-stone-150">
+                <div class="bg-white px-6 pt-6 pb-4 sm:p-8 sm:pb-6">
+                  <div class="flex items-center justify-between border-b border-stone-100 pb-4 mb-5">
+                    <h3 class="text-xl font-bold font-display text-stone-900" id="modal-title">
+                      Política de Privacidad
+                    </h3>
+                    <span v-if="companySettings?.versionPoliticaPrivacidad" class="text-xs bg-stone-100 text-stone-600 px-2.5 py-1 rounded-full font-body font-medium">
+                      Versión: {{ companySettings.versionPoliticaPrivacidad }}
+                    </span>
+                  </div>
+                  <div class="text-sm text-stone-600 font-body space-y-4 max-h-[60vh] overflow-y-auto pr-2 scrollbar-thin">
+                    <p v-if="companySettings?.politicaPrivacidad" class="whitespace-pre-line leading-relaxed">
+                      {{ companySettings.politicaPrivacidad }}
+                    </p>
+                    <p v-else class="text-stone-400 italic">
+                      La política de privacidad no ha sido configurada aún por la empresa.
+                    </p>
+                  </div>
+                </div>
+                <div class="bg-stone-50 px-6 py-4 sm:px-8 flex justify-end">
+                  <button type="button" @click="showPrivacyModal = false" class="btn btn-secondary px-5 py-2 text-sm font-semibold">
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
       </div>

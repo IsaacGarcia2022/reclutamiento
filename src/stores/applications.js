@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import ApplicationService from '../services/ApplicationService'
 import DocumentService from '../services/DocumentService'
+import ConsentService from '../services/ConsentService'
 import { useAuthStore } from './auth'
 
 export const useApplicationsStore = defineStore('applications', {
@@ -45,7 +46,7 @@ export const useApplicationsStore = defineStore('applications', {
       }
     },
 
-    async submit (data, file, answers, optionalFiles = {}) {
+    async submit (data, file, answers, optionalFiles = {}, consents = []) {
       this.loading = true
       try {
         let cvPath = data.cv
@@ -75,7 +76,18 @@ export const useApplicationsStore = defineStore('applications', {
           const candidateId = app.candidateId
           const applicationId = app.id
           
-          // 4. Crear registro del CV en la tabla documents
+          // 4. Registrar los consentimientos
+          if (consents && consents.length > 0) {
+            const consentsToInsert = consents.map(c => ({
+              postulacion_id: applicationId,
+              aceptado: c.aceptado,
+              tipo_consentimiento: c.tipo_consentimiento,
+              version_documento: c.version_documento
+            }))
+            await ConsentService.registerConsents(consentsToInsert)
+          }
+
+          // 5. Crear registro del CV en la tabla documents
           if (cvUploadedData) {
             await DocumentService.createRecord({
               ...cvUploadedData,
@@ -85,7 +97,7 @@ export const useApplicationsStore = defineStore('applications', {
             })
           }
           
-          // 5. Crear registros de archivos opcionales en la tabla documents
+          // 6. Crear registros de archivos opcionales en la tabla documents
           for (const [type, uploaded] of Object.entries(uploadedOptionalFiles)) {
             await DocumentService.createRecord({
               ...uploaded,

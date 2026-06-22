@@ -57,6 +57,7 @@ serve(async (request) => {
       version_politica_privacidad: optionalText(payload.versionPoliticaPrivacidad),
       terminos_postulacion: optionalText(payload.terminosPostulacion),
       version_terminos: optionalText(payload.versionTerminos),
+      periodo_conservacion_meses: typeof payload.periodoConservacionMeses === 'number' ? payload.periodoConservacionMeses : 12,
       actualizado_por: user.id,
       updated_at: new Date().toISOString()
     }

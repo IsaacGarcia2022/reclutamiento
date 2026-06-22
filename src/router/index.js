@@ -16,6 +16,7 @@ const routes = [
   { path: '/recuperar-contrasena', name: 'PasswordRecovery', component: () => import('../views/PasswordRecovery.vue') },
   { path: '/restablecer-contrasena', name: 'PasswordReset', component: () => import('../views/PasswordReset.vue') },
   { path: '/registro', name: 'Register', component: () => import('../views/Register.vue') },
+  { path: '/solicitar-eliminacion', name: 'RequestDeletion', component: () => import('../views/RequestDeletion.vue') },
 
   {
     path: '/admin',
@@ -34,7 +35,8 @@ const routes = [
       { path: 'plantillas', name: 'TemplateManager', component: () => import('../views/admin/TemplateManager.vue'), meta: { allowedRoles: ['administrador'] } },
       { path: 'catalogos', name: 'CatalogManager', component: () => import('../views/admin/CatalogManager.vue'), meta: { allowedRoles: ['administrador'] } },
       { path: 'reportes', name: 'ReportsManager', component: () => import('../views/admin/ReportsManager.vue'), meta: { allowedRoles: ['administrador', 'recursos_humanos', 'consulta'] } },
-      { path: 'candidatos', name: 'CandidatePool', component: () => import('../views/admin/CandidatePool.vue') }
+      { path: 'candidatos', name: 'CandidatePool', component: () => import('../views/admin/CandidatePool.vue') },
+      { path: 'privacidad', name: 'PrivacyManager', component: () => import('../views/admin/DeletionRequestsManager.vue'), meta: { allowedRoles: ['administrador', 'recursos_humanos'] } }
     ]
   }
 ]
