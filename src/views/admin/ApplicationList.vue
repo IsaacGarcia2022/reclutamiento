@@ -5,6 +5,7 @@ import { useVacanciesStore } from '../../stores/vacancies'
 import { useApplicationsStore } from '../../stores/applications'
 import ApplicationService from '../../services/ApplicationService'
 import DocumentService from '../../services/DocumentService'
+import AuditService from '../../services/AuditService'
 
 const route = useRoute()
 const vacancies = useVacanciesStore()
@@ -61,6 +62,7 @@ async function loadApplicationDocuments (applicationId) {
 async function viewDetails (app) {
   selectedApp.value = app
   observationText.value = app.internalObservation || ''
+  AuditService.record({ accion: 'consulta_postulacion', modulo: 'postulaciones', entidad: 'postulacion', entidadId: app.id, descripcion: `Consulta de postulación de ${app.name || app.email || 'candidato'}` }).catch(() => {})
   
   candidateAnswers.value = []
   loadingAnswers.value = true

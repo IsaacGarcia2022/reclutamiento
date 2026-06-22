@@ -78,6 +78,15 @@ npx supabase functions deploy company-admin
 npx supabase functions deploy catalogs-admin
 ```
 
+## Módulo de auditoría
+
+1. Ejecuta `migrations/012_audit_module.sql` después de las migraciones anteriores.
+2. Publica la función de consulta y registro:
+
+```powershell
+npx supabase functions deploy audit-admin
+```
+
 Esta migración crea un único registro institucional y el bucket público
 `company-assets` para el logo. Solo Administrador puede subir o reemplazar el
 archivo; el logo puede visualizarse públicamente en las vacantes.

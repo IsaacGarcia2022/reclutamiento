@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import ReportService from '../../services/ReportService'
 import VacancyService from '../../services/VacancyService'
+import AuditService from '../../services/AuditService'
 
 // Tipos de reporte en español con sus respectivos IDs para la Edge Function
 const reportTypes = [
@@ -284,6 +285,7 @@ function exportCSV() {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+  AuditService.record({ accion: 'exportacion_reporte', modulo: 'reportes', entidad: 'reporte', descripcion: `Exportación CSV: ${currentReportLabel.value}`, valorNuevo: { tipo: selectedReport.value, formato: 'csv' } }).catch(() => {})
 }
 
 // Exportación Excel (Formato HTML Spreadsheet compatible)
@@ -337,11 +339,13 @@ function exportExcel() {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+  AuditService.record({ accion: 'exportacion_reporte', modulo: 'reportes', entidad: 'reporte', descripcion: `Exportación Excel: ${currentReportLabel.value}`, valorNuevo: { tipo: selectedReport.value, formato: 'excel' } }).catch(() => {})
 }
 
 // Exportación PDF (Impresión nativa controlada)
 function exportPDF() {
   window.print()
+  AuditService.record({ accion: 'exportacion_reporte', modulo: 'reportes', entidad: 'reporte', descripcion: `Exportación PDF: ${currentReportLabel.value}`, valorNuevo: { tipo: selectedReport.value, formato: 'pdf' } }).catch(() => {})
 }
 </script>
 
