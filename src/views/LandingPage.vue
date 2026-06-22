@@ -111,7 +111,7 @@ function handleSearch () {
           </form>
 
           <div v-else class="mt-9 flex flex-col gap-3 sm:flex-row">
-            <router-link to="/registro" class="rounded-2xl bg-[#154f5d] px-7 py-4 text-center text-sm font-bold text-white shadow-lg shadow-[#154f5d]/15 transition hover:-translate-y-0.5 hover:bg-[#103f4a]">
+            <router-link to="/login" class="rounded-2xl bg-[#154f5d] px-7 py-4 text-center text-sm font-bold text-white shadow-lg shadow-[#154f5d]/15 transition hover:-translate-y-0.5 hover:bg-[#103f4a]">
               {{ content.primary }}
             </router-link>
             <router-link to="/vacantes" class="rounded-2xl border border-[#bdcdca] bg-white px-7 py-4 text-center text-sm font-bold text-[#29484f] transition hover:border-[#799b93] hover:bg-[#edf3f0]">
@@ -286,9 +286,9 @@ function handleSearch () {
             <h2 class="mx-auto mt-4 max-w-2xl font-display text-4xl font-bold tracking-[-0.035em] text-[#19333a] sm:text-5xl">
               El talento correcto merece un proceso a su altura.
             </h2>
-            <p class="mx-auto mt-5 max-w-xl text-[#627673]">Crea tu cuenta y comienza a construir mejores conexiones profesionales.</p>
+            <p class="mx-auto mt-5 max-w-xl text-[#627673]">Explora las oportunidades profesionales disponibles y encuentra tu próximo reto.</p>
             <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <router-link to="/registro" class="rounded-2xl bg-[#154f5d] px-7 py-4 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#103f4a]">Crear cuenta</router-link>
+              <router-link to="/login" class="rounded-2xl bg-[#154f5d] px-7 py-4 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#103f4a]">Acceso interno</router-link>
               <router-link to="/vacantes" class="rounded-2xl border border-[#aebfbb] bg-white/70 px-7 py-4 text-sm font-bold text-[#28474e] transition hover:bg-white">Explorar vacantes</router-link>
             </div>
           </div>

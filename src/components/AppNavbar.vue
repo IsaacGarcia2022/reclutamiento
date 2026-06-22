@@ -29,7 +29,6 @@ function logout () { auth.logout(); router.push('/'); mobileOpen.value = false }
           </template>
           <template v-else>
             <router-link to="/login" class="text-sm font-medium text-stone-600 hover:text-brand-600 transition-colors duration-200">Acceder</router-link>
-            <router-link to="/registro" class="btn-primary text-sm px-5 py-2.5">Registrarse</router-link>
           </template>
         </div>
 
@@ -50,7 +49,6 @@ function logout () { auth.logout(); router.push('/'); mobileOpen.value = false }
       </template>
       <template v-else>
         <router-link @click="mobileOpen = false" to="/login" class="block text-sm font-medium text-stone-600 hover:text-brand-600">Acceder</router-link>
-        <router-link @click="mobileOpen = false" to="/registro" class="block text-sm font-semibold text-brand-600">Registrarse</router-link>
       </template>
     </div>
   </nav>

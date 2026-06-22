@@ -6,6 +6,8 @@ function mapApplication (app) {
     id: app.id,
     vacancyId: app.vacante_id,
     candidateId: app.candidato_id,
+    vacancyTitle: app.vacante?.titulo || '',
+    vacancyCode: app.vacante?.codigo || '',
     name: `${app.nombres} ${app.apellidos}`.trim(),
     firstName: app.nombres,
     lastName: app.apellidos,
@@ -44,7 +46,7 @@ export default {
     const client = getSupabaseClient()
     const { data, error } = await client
       .from('applications')
-      .select('*, nivel_academico:nivel_academico_id(nombre), fuente_reclutamiento:fuente_reclutamiento_id(nombre)')
+      .select('*, vacante:vacante_id(titulo,codigo), nivel_academico:nivel_academico_id(nombre), fuente_reclutamiento:fuente_reclutamiento_id(nombre)')
       .eq('vacante_id', vacancyId)
       .order('created_at', { ascending: false })
 
@@ -56,11 +58,22 @@ export default {
     const client = getSupabaseClient()
     const { data, error } = await client
       .from('applications')
-      .select('*, nivel_academico:nivel_academico_id(nombre), fuente_reclutamiento:fuente_reclutamiento_id(nombre)')
+      .select('*, vacante:vacante_id(titulo,codigo), nivel_academico:nivel_academico_id(nombre), fuente_reclutamiento:fuente_reclutamiento_id(nombre)')
       .order('created_at', { ascending: false })
 
     if (error) throw error
     return data.map(mapApplication)
+  },
+
+  async get (id) {
+    const client = getSupabaseClient()
+    const { data, error } = await client
+      .from('applications')
+      .select('*, vacante:vacante_id(titulo,codigo), nivel_academico:nivel_academico_id(nombre), fuente_reclutamiento:fuente_reclutamiento_id(nombre)')
+      .eq('id', id)
+      .maybeSingle()
+    if (error) throw error
+    return mapApplication(data)
   },
 
   async create (data, answers) {

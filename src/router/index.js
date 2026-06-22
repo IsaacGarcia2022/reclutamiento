@@ -15,7 +15,6 @@ const routes = [
   { path: '/login', name: 'Login', component: () => import('../views/Login.vue') },
   { path: '/recuperar-contrasena', name: 'PasswordRecovery', component: () => import('../views/PasswordRecovery.vue') },
   { path: '/restablecer-contrasena', name: 'PasswordReset', component: () => import('../views/PasswordReset.vue') },
-  { path: '/registro', name: 'Register', component: () => import('../views/Register.vue') },
   { path: '/solicitar-eliminacion', name: 'RequestDeletion', component: () => import('../views/RequestDeletion.vue') },
 
   {
@@ -28,6 +27,8 @@ const routes = [
       { path: 'vacantes/nueva', name: 'VacancyCreate', component: () => import('../views/admin/VacancyForm.vue') },
       { path: 'vacantes/:id/editar', name: 'VacancyEdit', component: () => import('../views/admin/VacancyForm.vue'), props: true },
       { path: 'vacantes/:id/postulaciones', name: 'ApplicationList', component: () => import('../views/admin/ApplicationList.vue'), props: true },
+      { path: 'postulaciones', name: 'ApplicationManager', component: () => import('../views/admin/ApplicationManager.vue') },
+      { path: 'postulaciones/:id', name: 'ApplicationDetail', component: () => import('../views/admin/ApplicationDetail.vue'), props: true },
       { path: 'usuarios', name: 'UserManager', component: () => import('../views/admin/UserManager.vue'), meta: { allowedRoles: ['administrador'] } },
       { path: 'usuarios/nuevo', name: 'UserCreate', component: () => import('../views/admin/UserForm.vue'), meta: { allowedRoles: ['administrador'] } },
       { path: 'usuarios/:id/editar', name: 'UserEdit', component: () => import('../views/admin/UserForm.vue'), props: true, meta: { allowedRoles: ['administrador'] } },
@@ -37,6 +38,7 @@ const routes = [
       { path: 'auditoria', name: 'AuditManager', component: () => import('../views/admin/AuditManager.vue'), meta: { allowedRoles: ['administrador'] } },
       { path: 'reportes', name: 'ReportsManager', component: () => import('../views/admin/ReportsManager.vue'), meta: { allowedRoles: ['administrador', 'recursos_humanos', 'consulta'] } },
       { path: 'candidatos', name: 'CandidatePool', component: () => import('../views/admin/CandidatePool.vue') },
+      { path: 'candidatos/:id', name: 'CandidateDetail', component: () => import('../views/admin/CandidateDetail.vue'), props: true },
       { path: 'privacidad', name: 'PrivacyManager', component: () => import('../views/admin/DeletionRequestsManager.vue'), meta: { allowedRoles: ['administrador', 'recursos_humanos'] } }
     ]
   }
