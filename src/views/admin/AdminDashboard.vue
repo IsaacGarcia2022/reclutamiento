@@ -1,52 +1,5 @@
 <script setup>
-import { onMounted, computed } from 'vue'
-import { useVacanciesStore } from '../../stores/vacancies'
-import { useApplicationsStore } from '../../stores/applications'
-import { useAuthStore } from '../../stores/auth'
-
-const vacancies = useVacanciesStore()
-const applications = useApplicationsStore()
-const auth = useAuthStore()
-
-onMounted(async () => {
-  await vacancies.fetchAll()
-  await applications.fetchAll()
-})
-
-const myVacancies = computed(() => vacancies.list)
-const activeCount = computed(() => myVacancies.value.filter(v => v.status === 'publicada').length)
-const totalApps = computed(() => Object.values(applications.byVacancy).flat().length)
+import {onMounted,ref,computed}from'vue';import{getSupabaseClient}from'../../services/supabase';
+const data=ref(null),error=ref(''),loading=ref(true);async function load(){loading.value=true;error.value='';try{const{data:r,error:e}=await getSupabaseClient().functions.invoke('dashboard');if(e){let detail='';try{detail=await e.context?.json()}catch{detail=''}throw new Error(detail?.error||e.message)}if(r?.error)throw new Error(r.error);data.value=r.data}catch(e){error.value=e.message}finally{loading.value=false}}onMounted(load);const maxMonth=computed(()=>Math.max(...(data.value?.porMes||[]).map(x=>x.total),1));const maxArea=computed(()=>Math.max(...(data.value?.porArea||[]).map(x=>x.total),1));
 </script>
-
-<template>
-  <div>
-    <h2 class="font-display text-xl font-bold text-stone-900 mb-6">Dashboard</h2>
-
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-      <div class="card border border-stone-100 p-6">
-        <p class="text-sm text-stone-500 font-body">Total vacantes</p>
-        <p class="font-display text-3xl font-bold text-stone-900 mt-1">{{ myVacancies.length }}</p>
-      </div>
-      <div class="card border border-stone-100 p-6">
-        <p class="text-sm text-stone-500 font-body">Vacantes activas</p>
-        <p class="font-display text-3xl font-bold text-brand-600 mt-1">{{ activeCount }}</p>
-      </div>
-      <div class="card border border-stone-100 p-6">
-        <p class="text-sm text-stone-500 font-body">Postulaciones</p>
-        <p class="font-display text-3xl font-bold text-coral-500 mt-1">{{ totalApps }}</p>
-      </div>
-    </div>
-
-    <div class="card border border-stone-100 p-6">
-      <h3 class="font-display font-semibold text-stone-900 mb-4">Accesos rápidos</h3>
-      <div class="flex flex-wrap gap-3">
-        <router-link to="/admin/vacantes/nueva" class="btn-primary px-5 py-2.5 text-sm">
-          + Nueva vacante
-        </router-link>
-        <router-link to="/admin/vacantes" class="btn-secondary px-5 py-2.5 text-sm">
-          Gestionar vacantes
-        </router-link>
-      </div>
-    </div>
-  </div>
-</template>
+<template><div><div class="mb-6 flex items-center justify-between"><div><h2 class="font-display text-xl font-bold text-stone-900">Dashboard</h2><p class="mt-1 text-sm text-stone-500">Resumen operativo de reclutamiento.</p></div><button @click="load" class="rounded-xl bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-700">Actualizar</button></div><p v-if="error" class="rounded-xl bg-red-50 p-3 text-sm text-red-700">{{error}}</p><div v-else-if="loading" class="py-16 text-center text-stone-400">Cargando indicadores...</div><template v-else><div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"><article v-for="[label,value] in [['Vacantes activas',data.indicadores.vacantes_activas],['Vacantes en borrador',data.indicadores.vacantes_borrador],['Próximas a cerrar',data.indicadores.vacantes_proximas_a_cerrar],['Postulaciones nuevas',data.indicadores.postulaciones_nuevas],['Postulaciones del mes',data.indicadores.postulaciones_del_mes],['Candidatos registrados',data.indicadores.candidatos_registrados]]" :key="label" class="card border border-stone-100 p-5"><p class="text-sm text-stone-500">{{label}}</p><p class="mt-2 font-display text-3xl font-bold text-brand-700">{{value}}</p></article></div><div class="mt-6 grid gap-6 xl:grid-cols-2"><section class="card border border-stone-100 p-6"><h3 class="font-display font-bold">Postulaciones por mes</h3><div class="mt-6 flex h-48 items-end gap-3"><div v-for="item in data.porMes" :key="item.mes" class="flex flex-1 flex-col items-center gap-2"><span class="text-xs font-semibold">{{item.total}}</span><div class="w-full rounded-t-lg bg-brand-500" :style="{height:`${Math.max(6,item.total/maxMonth*150)}px`}"></div><span class="text-[10px] text-stone-400">{{item.mes.slice(5)}}</span></div></div></section><section class="card border border-stone-100 p-6"><h3 class="font-display font-bold">Postulaciones por área</h3><div class="mt-6 space-y-4"><div v-for="item in data.porArea" :key="item.nombre"><div class="mb-1 flex justify-between text-sm"><span>{{item.nombre}}</span><strong>{{item.total}}</strong></div><div class="h-2 rounded-full bg-stone-100"><div class="h-full rounded-full bg-sage-500" :style="{width:`${item.total/maxArea*100}%`}"></div></div></div></div></section></div><div class="mt-6 grid gap-6 xl:grid-cols-3"><section class="card border border-stone-100 p-6"><h3 class="font-display font-bold">Últimas postulaciones</h3><p v-for="a in data.ultimas" :key="a.id" class="mt-4 border-b border-stone-100 pb-3 text-sm"><strong>{{a.candidate?.nombres}} {{a.candidate?.apellidos}}</strong><br><span class="text-stone-500">{{a.vacancy?.titulo}}</span></p></section><section class="card border border-stone-100 p-6"><h3 class="font-display font-bold">Próximas a cerrar</h3><p v-for="v in data.proximas" :key="v.id" class="mt-4 text-sm"><strong>{{v.titulo}}</strong><br><span class="text-stone-500">Cierra: {{v.fecha_cierre}}</span></p></section><section class="card border border-stone-100 p-6"><h3 class="font-display font-bold">Más postulaciones</h3><p v-for="v in data.mayorPostulaciones" :key="v.id" class="mt-4 text-sm"><strong>{{v.titulo}}</strong><br><span class="text-stone-500">{{v.cantidad_postulaciones}} postulaciones</span></p></section></div></template></div></template>
