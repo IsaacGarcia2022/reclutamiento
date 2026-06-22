@@ -9,7 +9,7 @@ export default {
   async getById (id) { const { data, error } = await getSupabaseClient().from('vacancies').select(select).eq('id', id).maybeSingle(); if (error) throw error; return map(data) },
   async listAdmin () { return (await admin('list')).map(map) },
   async getAdmin (id) { return map(await admin('get', { id })) },
-  create: (payload) => admin('create', payload), update: (payload) => admin('update', payload), transition: (id, estado) => admin('transition', { id, estado }), duplicate: (id) => admin('duplicate', { id }),
+  create: (payload) => admin('create', payload), update: (payload) => admin('update', payload), transition: (id, estado) => admin('transition', { id, estado }), duplicate: (id) => admin('duplicate', { id }), delete: (id) => admin('delete', { id }),
   async catalogs () { const { data, error } = await getSupabaseClient().from('catalog_items').select('*').order('nombre'); if (error) throw error; return data },
   async uploadImage (file) { if (!file) return null; if (!file.type.startsWith('image/') || file.size > 2 * 1024 * 1024) throw new Error('La imagen debe ser menor a 2 MB.'); const ext=file.name.split('.').pop() || 'jpg'; const path=`vacancies/${crypto.randomUUID()}.${ext}`; const client=getSupabaseClient(); const {error}=await client.storage.from('vacancy-assets').upload(path,file,{contentType:file.type}); if(error) throw error; return client.storage.from('vacancy-assets').getPublicUrl(path).data.publicUrl }
 }

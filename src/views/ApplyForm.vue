@@ -538,7 +538,7 @@ async function submit () {
                   class="w-4 h-4 mt-0.5 rounded border-stone-300 text-brand-600 focus:ring-brand-500 focus:ring-offset-0 transition-colors" />
                 <label for="consentData" class="text-xs text-stone-600 font-body cursor-pointer select-none leading-relaxed">
                   Autorizo el tratamiento de mis datos personales para los fines exclusivos del proceso de selección y contratación laboral para esta vacante, conforme a los 
-                  <router-link to="/terminos-de-postulacion" target="_blank" class="text-brand-600 underline font-medium hover:text-brand-700">términos de postulación</router-link>. *
+                  <router-link to="/terminos" target="_blank" class="text-brand-600 underline font-medium hover:text-brand-700">términos de postulación</router-link>. *
                 </label>
               </div>
               <p v-if="errors.consentDataTreatment" class="text-xs text-red-500 font-body ml-7">{{ errors.consentDataTreatment }}</p>

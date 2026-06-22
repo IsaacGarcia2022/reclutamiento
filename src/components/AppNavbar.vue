@@ -19,8 +19,13 @@ function logout () { auth.logout(); router.push('/'); mobileOpen.value = false }
           <span class="text-brand-600">Portal</span><span class="text-coral-500">Empleo</span>
         </button>
 
-        <div class="hidden md:flex items-center gap-8">
+        <div class="hidden md:flex items-center gap-6">
+          <router-link to="/" class="text-sm font-medium text-stone-600 hover:text-brand-600 transition-colors duration-200">Inicio</router-link>
+          <router-link to="/trabaja-con-nosotros" class="text-sm font-medium text-stone-600 hover:text-brand-600 transition-colors duration-200">Trabaja con nosotros</router-link>
           <router-link to="/vacantes" class="text-sm font-medium text-stone-600 hover:text-brand-600 transition-colors duration-200">Vacantes</router-link>
+          <router-link to="/empresa" class="text-sm font-medium text-stone-600 hover:text-brand-600 transition-colors duration-200">Conoce la empresa</router-link>
+          <router-link to="/preguntas-frecuentes" class="text-sm font-medium text-stone-600 hover:text-brand-600 transition-colors duration-200">Preguntas frecuentes</router-link>
+          <router-link to="/contacto" class="text-sm font-medium text-stone-600 hover:text-brand-600 transition-colors duration-200">Contacto</router-link>
           <template v-if="auth.isAuthenticated">
             <router-link to="/admin" class="text-sm font-medium text-stone-600 hover:text-brand-600 transition-colors duration-200">Panel</router-link>
             <div class="h-5 w-px bg-stone-200"></div>
@@ -42,7 +47,12 @@ function logout () { auth.logout(); router.push('/'); mobileOpen.value = false }
     </div>
 
     <div v-show="mobileOpen" class="md:hidden border-t border-stone-200 bg-white px-4 py-4 space-y-3">
+      <router-link @click="mobileOpen = false" to="/" class="block text-sm font-medium text-stone-600 hover:text-brand-600">Inicio</router-link>
+      <router-link @click="mobileOpen = false" to="/trabaja-con-nosotros" class="block text-sm font-medium text-stone-600 hover:text-brand-600">Trabaja con nosotros</router-link>
       <router-link @click="mobileOpen = false" to="/vacantes" class="block text-sm font-medium text-stone-600 hover:text-brand-600">Vacantes</router-link>
+      <router-link @click="mobileOpen = false" to="/empresa" class="block text-sm font-medium text-stone-600 hover:text-brand-600">Conoce la empresa</router-link>
+      <router-link @click="mobileOpen = false" to="/preguntas-frecuentes" class="block text-sm font-medium text-stone-600 hover:text-brand-600">Preguntas frecuentes</router-link>
+      <router-link @click="mobileOpen = false" to="/contacto" class="block text-sm font-medium text-stone-600 hover:text-brand-600">Contacto</router-link>
       <template v-if="auth.isAuthenticated">
         <router-link @click="mobileOpen = false" to="/admin" class="block text-sm font-medium text-stone-600 hover:text-brand-600">Panel</router-link>
         <button @click="logout" class="block text-sm font-medium text-coral-500">Cerrar sesión ({{ auth.currentUser.name }})</button>
