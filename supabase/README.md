@@ -69,6 +69,15 @@ administrativa:
 npx supabase functions deploy company-admin
 ```
 
+## Módulo de catálogos
+
+1. Ejecuta `migrations/010_catalogs_module.sql` después de las migraciones existentes.
+2. Publica la función administrativa:
+
+```powershell
+npx supabase functions deploy catalogs-admin
+```
+
 Esta migración crea un único registro institucional y el bucket público
 `company-assets` para el logo. Solo Administrador puede subir o reemplazar el
 archivo; el logo puede visualizarse públicamente en las vacantes.
