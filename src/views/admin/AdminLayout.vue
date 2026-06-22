@@ -1,14 +1,90 @@
 <script setup>
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { useRouter } from 'vue-router'
+import NotificationService from '../../services/NotificationService'
 
 const auth = useAuthStore()
 const router = useRouter()
+
+const internalNotifications = ref([])
+const showNotificationsDropdown = ref(false)
+const loadingAlerts = ref(false)
+
+const unreadCount = computed(() => {
+  return internalNotifications.value.filter(n => !n.leida).length
+})
+
+async function loadNotifications () {
+  loadingAlerts.value = true
+  try {
+    internalNotifications.value = await NotificationService.listInternal()
+  } catch (e) {
+    console.error('Error al cargar alertas internas:', e)
+  } finally {
+    loadingAlerts.value = false
+  }
+}
+
+async function markAsRead (notif) {
+  try {
+    if (!notif.leida) {
+      await NotificationService.markAsRead(notif.id)
+      notif.leida = true
+    }
+    if (notif.postulacion_id) {
+      router.push('/admin/candidatos')
+    } else if (notif.titulo.toLowerCase().includes('vacante')) {
+      router.push('/admin/vacantes')
+    }
+  } catch (e) {
+    console.error('Error al marcar notificación como leída:', e)
+  }
+}
+
+async function handleNotificationClick (notif) {
+  showNotificationsDropdown.value = false
+  await markAsRead(notif)
+}
+
+function formatTime (dateString) {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
 function logout () {
   auth.logout()
   router.push('/')
 }
+
+const closeDropdown = (e) => {
+  if (!e.target.closest('.notification-container')) {
+    showNotificationsDropdown.value = false
+  }
+}
+
+onMounted(async () => {
+  document.addEventListener('click', closeDropdown)
+  try {
+    // 1. Ejecutar el chequeo de alertas en tiempo real en la base de datos
+    await NotificationService.checkVacancyAlerts()
+  } catch (e) {
+    console.error('Error al ejecutar RPC de chequeo de vacantes:', e)
+  }
+  // 2. Cargar las notificaciones del usuario
+  await loadNotifications()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeDropdown)
+})
 </script>
 
 <template>
@@ -19,8 +95,85 @@ function logout () {
         <p class="text-sm text-stone-500 mt-1 font-body">{{ auth.currentUser?.name }} &mdash; {{ auth.currentUser?.company }}</p>
       </div>
       <div class="flex items-center gap-4">
-        <router-link to="/" class="text-sm font-medium text-stone-500 hover:text-brand-600 transition-colors">Ver sitio</router-link>
-        <button @click="logout" class="text-sm font-medium text-coral-500 hover:text-coral-600 transition-colors">Cerrar sesión</button>
+        <!-- Notificaciones -->
+        <div class="relative notification-container">
+          <button @click.stop="showNotificationsDropdown = !showNotificationsDropdown" 
+            class="relative p-2 text-stone-500 hover:text-brand-600 hover:bg-stone-50 rounded-xl transition-all duration-200 focus:outline-none"
+            title="Notificaciones">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span v-if="unreadCount > 0" 
+              class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-coral-500 text-[10px] font-bold text-white ring-2 ring-white animate-pulse">
+              {{ unreadCount }}
+            </span>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div v-if="showNotificationsDropdown" 
+            class="absolute right-0 mt-2.5 w-80 sm:w-96 bg-white rounded-2xl border border-stone-200 shadow-xl py-2 z-50 origin-top-right transition-all duration-200">
+            <div class="flex items-center justify-between px-4 py-2 border-b border-stone-100 mb-2">
+              <h3 class="font-display font-bold text-sm text-stone-850">Notificaciones</h3>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 font-body">
+                {{ unreadCount }} pendientes
+              </span>
+            </div>
+
+            <!-- List of notifications -->
+            <div class="max-h-80 overflow-y-auto px-2 space-y-1">
+              <div v-if="loadingAlerts" class="text-center py-6 text-xs text-stone-400 font-body">
+                <div class="w-5 h-5 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto mb-2"></div>
+                Cargando notificaciones...
+              </div>
+              <div v-else-if="internalNotifications.length === 0" class="text-center py-8 text-xs text-stone-400 font-body">
+                No tienes notificaciones en este momento.
+              </div>
+              <template v-else>
+                <button v-for="notif in internalNotifications" :key="notif.id"
+                  @click="handleNotificationClick(notif)"
+                  class="w-full text-left p-3 rounded-xl hover:bg-stone-50 transition-all duration-200 flex gap-3 border"
+                  :class="[
+                    notif.leida ? 'border-transparent opacity-75' : 'border-brand-100/50 bg-brand-50/10'
+                  ]">
+                  <!-- Icon Based on Title -->
+                  <div class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5"
+                    :class="{
+                      'bg-blue-50 text-blue-600': notif.titulo.includes('Nueva postulación'),
+                      'bg-amber-50 text-amber-600': notif.titulo.includes('próxima a cerrar'),
+                      'bg-purple-50 text-purple-600': notif.titulo.includes('sin postulaciones'),
+                      'bg-coral-50 text-coral-600': notif.titulo.includes('Error al cargar'),
+                      'bg-stone-100 text-stone-600': notif.titulo.includes('cerrada')
+                    }">
+                    <svg v-if="notif.titulo.includes('Nueva postulación')" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    <svg v-else-if="notif.titulo.includes('próxima a cerrar')" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <svg v-else-if="notif.titulo.includes('sin postulaciones')" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <svg v-else-if="notif.titulo.includes('Error al cargar')" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                  </div>
+                  
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-1">
+                      <p class="text-xs font-bold text-stone-850 font-display leading-tight truncate">{{ notif.titulo }}</p>
+                      <span v-if="!notif.leida" class="w-2 h-2 shrink-0 bg-brand-500 rounded-full mt-1"></span>
+                    </div>
+                    <p class="text-[11px] text-stone-500 font-body mt-0.5 leading-normal">{{ notif.mensaje }}</p>
+                    <p class="text-[9px] text-stone-400 font-body mt-1">{{ formatTime(notif.created_at) }}</p>
+                  </div>
+                </button>
+              </template>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -57,6 +210,12 @@ function logout () {
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 9h.01M15 9h.01M9 12h.01M15 12h.01"/></svg>
             Empresa
           </router-link>
+          <router-link v-if="auth.currentUser?.role === 'administrador'" to="/admin/plantillas"
+            class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+            :class="$route.path.startsWith('/admin/plantillas') ? 'bg-brand-50 text-brand-700' : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            Plantillas
+          </router-link>
         </nav>
       </aside>
 
@@ -66,3 +225,4 @@ function logout () {
     </div>
   </div>
 </template>
+

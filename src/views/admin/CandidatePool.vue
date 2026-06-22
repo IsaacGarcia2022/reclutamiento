@@ -3,6 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import CandidateService from '../../services/CandidateService'
 import VacancyService from '../../services/VacancyService'
 import ApplicationService from '../../services/ApplicationService'
+import DocumentService from '../../services/DocumentService'
+import NotificationService from '../../services/NotificationService'
 
 const candidates = ref([])
 const loading = ref(false)
@@ -28,6 +30,19 @@ const tagInput = ref('')
 const observationText = ref('')
 const savingObservation = ref(false)
 const previewCvUrl = ref(null)
+
+// Documentos del candidato
+const candidateDocuments = ref([])
+const loadingDocs = ref(false)
+const uploadingDoc = ref(false)
+const newDocFile = ref(null)
+const newDocFileName = ref('')
+const newDocType = ref('curriculum')
+const newDocError = ref('')
+
+// Notificaciones y correos del candidato
+const candidateNotifications = ref([])
+const loadingNotifications = ref(false)
 
 // Cargar catálogo e información de candidatos
 onMounted(async () => {
@@ -109,6 +124,8 @@ async function selectCandidate (candidate) {
   history.value = []
   try {
     history.value = await CandidateService.getHistory(candidate.id)
+    await loadCandidateDocuments(candidate.id)
+    await loadCandidateNotifications(candidate.id)
   } catch (e) {
     console.error('Error cargando historial de postulaciones:', e)
   } finally {
@@ -211,11 +228,27 @@ async function deleteCandidate () {
   )
   if (!confirmed) return
 
+  // Simular envío de notificación de eliminación (GDPR)
+  try {
+    const variables = {
+      nombre_candidato: `${selectedCandidate.value.firstName} ${selectedCandidate.value.lastName}`.trim(),
+      nombre_empresa: selectedCandidate.value.company || 'Empresa de Empleo'
+    }
+    await NotificationService.sendEmailNotification(
+      'eliminacion_datos',
+      selectedCandidate.value.id,
+      null,
+      variables
+    )
+  } catch (err) {
+    console.error('Error al simular envío de eliminación de datos:', err)
+  }
+
   try {
     await CandidateService.delete(selectedCandidate.value.id)
     candidates.value = candidates.value.filter(c => c.id !== selectedCandidate.value.id)
     selectedCandidate.value = null
-    alert('Candidato y postulaciones eliminadas permanentemente.')
+    alert('Candidato y postulaciones eliminadas permanentemente. Correo de confirmación de eliminación enviado al candidato (simulado).')
   } catch (e) {
     alert('Error al eliminar los datos: ' + e.message)
   }
@@ -244,6 +277,130 @@ async function downloadCv (path, fileName) {
     document.body.removeChild(link)
   } catch (e) {
     alert('Error al descargar el CV: ' + e.message)
+  }
+}
+
+// Cargar documentos del candidato
+async function loadCandidateDocuments (candidateId) {
+  loadingDocs.value = true
+  candidateDocuments.value = []
+  try {
+    candidateDocuments.value = await DocumentService.listByCandidate(candidateId)
+  } catch (e) {
+    console.error('Error al cargar documentos del candidato:', e)
+  } finally {
+    loadingDocs.value = false
+  }
+}
+
+// Cargar notificaciones/correos del candidato
+async function loadCandidateNotifications (candidateId) {
+  loadingNotifications.value = true
+  candidateNotifications.value = []
+  try {
+    candidateNotifications.value = await NotificationService.listByCandidate(candidateId)
+  } catch (e) {
+    console.error('Error al cargar notificaciones del candidato:', e)
+  } finally {
+    loadingNotifications.value = false
+  }
+}
+
+// Validar y guardar archivo seleccionado para nuevo documento
+function handleNewDocFile (e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const error = DocumentService.validateFile(file, newDocType.value)
+  if (error) {
+    newDocError.value = error
+    newDocFile.value = null
+    newDocFileName.value = ''
+    return
+  }
+  newDocFile.value = file
+  newDocFileName.value = file.name
+  newDocError.value = ''
+}
+
+// Subir nuevo documento directamente a la ficha del candidato
+async function uploadNewDocument () {
+  if (!newDocFile.value || !selectedCandidate.value) return
+  uploadingDoc.value = true
+  try {
+    const newDoc = await DocumentService.uploadAndCreate(
+      newDocFile.value,
+      newDocType.value,
+      selectedCandidate.value.id
+    )
+    if (newDoc) {
+      candidateDocuments.value.unshift(newDoc)
+      newDocFile.value = null
+      newDocFileName.value = ''
+      newDocError.value = ''
+      alert('Documento cargado con éxito en el expediente.')
+    }
+  } catch (e) {
+    alert('Error al subir el documento: ' + e.message)
+  } finally {
+    uploadingDoc.value = false
+  }
+}
+
+// Eliminar documento (borrado lógico)
+async function deleteDocument (docId) {
+  if (!confirm('¿Estás seguro de que deseas eliminar este documento del expediente?')) return
+  try {
+    await DocumentService.deleteDocument(docId)
+    candidateDocuments.value = candidateDocuments.value.filter(d => d.id !== docId)
+    alert('Documento eliminado con éxito.')
+  } catch (e) {
+    alert('Error al eliminar el documento: ' + e.message)
+  }
+}
+
+// Descargar documento de forma segura y auditada
+async function downloadDocument (docId) {
+  try {
+    const res = await DocumentService.downloadDocument(docId)
+    const link = document.createElement('a')
+    link.href = res.signedUrl
+    link.download = res.nombreOriginal
+    link.target = '_blank'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (e) {
+    alert('Error al descargar el documento: ' + e.message)
+  }
+}
+
+// Previsualizar documento de forma segura y auditada
+async function previewDocument (docId) {
+  try {
+    const res = await DocumentService.downloadDocument(docId)
+    previewCvUrl.value = res.signedUrl
+  } catch (e) {
+    alert('Error al previsualizar el documento: ' + e.message)
+  }
+}
+
+// Redireccionar visualización del historial al flujo auditado si existe el documento registrado
+async function previewHistoryCv (historyItem) {
+  const doc = candidateDocuments.value.find(d => d.postulacion_id === historyItem.id && d.tipo_documento === 'curriculum')
+  if (doc) {
+    await previewDocument(doc.id)
+  } else {
+    await previewCv(historyItem.cv)
+  }
+}
+
+// Redireccionar descarga del historial al flujo auditado si existe el documento registrado
+async function downloadHistoryCv (historyItem) {
+  const doc = candidateDocuments.value.find(d => d.postulacion_id === historyItem.id && d.tipo_documento === 'curriculum')
+  if (doc) {
+    await downloadDocument(doc.id)
+  } else {
+    await downloadCv(historyItem.cv, historyItem.vacancyTitle + '_CV')
   }
 }
 
@@ -541,6 +698,137 @@ const potentialDuplicates = computed(() => {
             </div>
           </div>
 
+          <!-- Expediente de Documentos (2.9 Documentos) -->
+          <div class="border-t border-stone-100 pt-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold text-stone-400 uppercase tracking-wider">Expediente de Documentos</h4>
+              <span class="text-[10px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full font-mono">
+                {{ candidateDocuments.length }} archivos
+              </span>
+            </div>
+
+            <!-- Listado de documentos del expediente -->
+            <div v-if="loadingDocs" class="text-center py-4 bg-stone-50 rounded-xl">
+              <div class="w-5 h-5 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto"></div>
+              <p class="text-xs text-stone-400 mt-2 font-body">Cargando expediente...</p>
+            </div>
+
+            <div v-else-if="candidateDocuments.length === 0" class="bg-stone-50 border border-stone-150 rounded-xl p-4 text-center text-xs text-stone-400 font-body">
+              No hay documentos cargados en el expediente de este candidato.
+            </div>
+
+            <div v-else class="space-y-2">
+              <div v-for="doc in candidateDocuments" :key="doc.id" 
+                class="bg-stone-50/50 border border-stone-150 rounded-xl p-3 flex items-center justify-between gap-4">
+                <div class="min-w-0 flex items-start gap-2.5">
+                  <!-- Icono según tipo de documento -->
+                  <div class="p-2 bg-brand-50 text-brand-700 rounded-lg shrink-0 mt-0.5">
+                    <svg v-if="doc.tipo_documento === 'curriculum'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <svg v-else-if="doc.tipo_documento === 'carta_presentacion'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <svg v-else-if="doc.tipo_documento === 'certificado'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                    <svg v-else-if="doc.tipo_documento === 'portafolio'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold text-stone-800 truncate" :title="doc.nombre_original">{{ doc.nombre_original }}</p>
+                    <div class="flex items-center gap-2 text-[10px] text-stone-400 font-mono mt-0.5">
+                      <span class="capitalize font-semibold text-brand-700">{{ doc.tipo_documento.replace('_', ' ') }}</span>
+                      <span>&middot;</span>
+                      <span>{{ (doc.tamanio / (1024 * 1024)).toFixed(2) }} MB</span>
+                      <span>&middot;</span>
+                      <span>{{ new Date(doc.fecha_carga).toLocaleDateString('es-ES') }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Acciones sobre el documento -->
+                <div class="flex gap-1.5 shrink-0 items-center">
+                  <button @click="previewDocument(doc.id)"
+                    class="text-[10px] bg-white border border-stone-200 hover:bg-stone-100 font-bold text-stone-600 py-1.5 px-2.5 rounded-lg transition-colors">
+                    Ver
+                  </button>
+                  <button @click="downloadDocument(doc.id)"
+                    class="text-[10px] bg-white border border-stone-200 hover:bg-stone-100 font-bold text-stone-600 py-1.5 px-2.5 rounded-lg transition-colors">
+                    Descargar
+                  </button>
+                  <button @click="deleteDocument(doc.id)"
+                    class="text-[10px] bg-red-50 hover:bg-red-100 border border-red-100 font-bold text-red-600 py-1.5 px-2.5 rounded-lg transition-colors">
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Formulario para subir nuevo documento directamente -->
+            <div class="bg-stone-50 border border-stone-200 rounded-xl p-3.5 mt-2 space-y-3">
+              <h5 class="text-xs font-semibold text-stone-700">Subir nuevo documento al expediente</h5>
+              <div class="flex flex-col sm:flex-row gap-2.5 items-end">
+                <div class="flex-1 w-full space-y-1">
+                  <label class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Tipo de Documento</label>
+                  <select v-model="newDocType" 
+                    class="w-full text-xs rounded-lg border border-stone-200 p-2 bg-white outline-none focus:border-brand-500 font-body">
+                    <option value="curriculum">Currículum</option>
+                    <option value="carta_presentacion">Carta de Presentación</option>
+                    <option value="certificado">Certificado</option>
+                    <option value="portafolio">Portafolio</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+                
+                <div class="flex-1 w-full space-y-1">
+                  <label class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Archivo</label>
+                  <div class="relative border border-stone-250 hover:border-brand-400 rounded-lg p-2 text-center bg-white cursor-pointer h-[38px] flex items-center justify-center">
+                    <input type="file" @change="handleNewDocFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                    <span class="text-xs text-stone-500 font-body block truncate max-w-xs">
+                      {{ newDocFileName || 'Seleccionar archivo...' }}
+                    </span>
+                  </div>
+                </div>
+
+                <button @click="uploadNewDocument" :disabled="uploadingDoc || !newDocFile"
+                  class="bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs py-2.5 px-4 rounded-lg transition-all h-[38px] flex items-center justify-center gap-1.5 shrink-0 w-full sm:w-auto disabled:opacity-50">
+                  <svg v-if="uploadingDoc" class="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  <span>Subir</span>
+                </button>
+              </div>
+              <p v-if="newDocError" class="text-[10px] text-red-500 font-body mt-0.5">{{ newDocError }}</p>
+            </div>
+          </div>
+
+          <!-- Notificaciones y Correos Enviados (2.10 Notificaciones) -->
+          <div class="border-t border-stone-100 pt-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold text-stone-400 uppercase tracking-wider">Historial de Notificaciones y Correos</h4>
+              <span class="text-[10px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full font-mono">
+                {{ candidateNotifications.length }} enviados
+              </span>
+            </div>
+
+            <!-- Listado de notificaciones/correos del candidato -->
+            <div v-if="loadingNotifications" class="text-center py-4 bg-stone-50 rounded-xl">
+              <div class="w-5 h-5 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto"></div>
+              <p class="text-xs text-stone-400 mt-2 font-body">Cargando historial de correos...</p>
+            </div>
+
+            <div v-else-if="candidateNotifications.length === 0" class="bg-stone-50 border border-stone-150 rounded-xl p-4 text-center text-xs text-stone-400 font-body">
+              No se han registrado correos ni notificaciones enviadas a este candidato.
+            </div>
+
+            <div v-else class="space-y-2 max-h-60 overflow-y-auto pr-1">
+              <div v-for="notif in candidateNotifications" :key="notif.id" 
+                class="bg-stone-50 border border-stone-150 rounded-xl p-3 space-y-1.5 text-xs font-body">
+                <div class="flex items-start justify-between gap-2">
+                  <span class="font-bold text-stone-850">{{ notif.titulo }}</span>
+                  <span class="text-[9px] text-stone-400 font-mono shrink-0">{{ new Date(notif.created_at).toLocaleString('es-ES') }}</span>
+                </div>
+                <p class="text-stone-600 leading-normal whitespace-pre-line text-[11px]">{{ notif.mensaje }}</p>
+                <div v-if="notif.metadata && notif.metadata.template" class="text-[9px] text-brand-600 font-semibold font-mono uppercase bg-brand-50 rounded px-1.5 py-0.5 w-fit">
+                  Plantilla: {{ notif.metadata.template }}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Historial de Postulaciones (History) -->
           <div class="border-t border-stone-100 pt-4 space-y-3">
             <h4 class="text-xs font-bold text-stone-400 uppercase tracking-wider">Historial de Postulaciones</h4>
@@ -575,11 +863,11 @@ const potentialDuplicates = computed(() => {
                   </span>
                   
                   <div class="flex gap-1.5 shrink-0">
-                    <button @click="previewCv(h.cv)"
+                    <button @click="previewHistoryCv(h)"
                       class="text-[10px] bg-white border border-stone-200 hover:bg-stone-100 font-bold text-stone-600 py-1.5 px-2.5 rounded-lg transition-colors">
                       Ver CV
                     </button>
-                    <button @click="downloadCv(h.cv, selectedCandidate.name + '_CV')"
+                    <button @click="downloadHistoryCv(h)"
                       class="text-[10px] bg-white border border-stone-200 hover:bg-stone-100 font-bold text-stone-600 py-1.5 px-2.5 rounded-lg transition-colors">
                       Descargar CV
                     </button>

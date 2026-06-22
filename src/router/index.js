@@ -31,6 +31,7 @@ const routes = [
       { path: 'usuarios/nuevo', name: 'UserCreate', component: () => import('../views/admin/UserForm.vue'), meta: { allowedRoles: ['administrador'] } },
       { path: 'usuarios/:id/editar', name: 'UserEdit', component: () => import('../views/admin/UserForm.vue'), props: true, meta: { allowedRoles: ['administrador'] } },
       { path: 'empresa', name: 'CompanySettings', component: () => import('../views/admin/CompanySettings.vue'), meta: { allowedRoles: ['administrador'] } },
+      { path: 'plantillas', name: 'TemplateManager', component: () => import('../views/admin/TemplateManager.vue'), meta: { allowedRoles: ['administrador'] } },
       { path: 'candidatos', name: 'CandidatePool', component: () => import('../views/admin/CandidatePool.vue') }
     ]
   }

@@ -90,11 +90,31 @@ export default {
       fuente_reclutamiento_id: data.recruitmentSourceId || null
     }
 
-    const { error } = await client
-      .from('applications')
-      .insert(payload)
+    const session = await client.auth.getSession()
+    const isAuthenticated = !!session.data.session?.user
 
-    if (error) throw error
+    let createdApp
+    if (isAuthenticated) {
+      const { data: res, error } = await client
+        .from('applications')
+        .insert(payload)
+        .select()
+        .single()
+
+      if (error) throw error
+      createdApp = res
+    } else {
+      const { error } = await client
+        .from('applications')
+        .insert(payload)
+
+      if (error) throw error
+      createdApp = {
+        ...payload,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    }
 
     if (answers && answers.length > 0) {
       const answersPayload = answers.map(ans => ({
@@ -108,7 +128,7 @@ export default {
       if (ansError) throw ansError
     }
 
-    return { id: applicationId, vacancyId: data.vacancyId }
+    return mapApplication(createdApp)
   },
 
   async updateStatus (id, status, reviewerId) {
@@ -161,9 +181,16 @@ export default {
   async getCvSignedUrl (path) {
     if (!path) return null
     const client = getSupabaseClient()
+    let bucket = 'candidate-cvs'
+    let filePath = path
+    if (path.includes('/')) {
+      const parts = path.split('/')
+      bucket = parts[0]
+      filePath = parts.slice(1).join('/')
+    }
     const { data, error } = await client.storage
-      .from('candidate-cvs')
-      .createSignedUrl(path, 60)
+      .from(bucket)
+      .createSignedUrl(filePath, 60)
 
     if (error) throw error
     return data.signedUrl

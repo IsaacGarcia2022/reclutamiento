@@ -5,6 +5,8 @@ import { useVacanciesStore } from '../stores/vacancies'
 import { useApplicationsStore } from '../stores/applications'
 import VacancyService from '../services/VacancyService'
 import VacancyQuestionsService from '../services/VacancyQuestionsService'
+import DocumentService from '../services/DocumentService'
+import NotificationService from '../services/NotificationService'
 import AppInput from '../components/AppInput.vue'
 import AppSelect from '../components/AppSelect.vue'
 import AppTextarea from '../components/AppTextarea.vue'
@@ -21,7 +23,12 @@ const showOptional = ref(false)
 
 const academicLevels = ref([])
 const recruitmentSources = ref([])
+
 const rawCvFile = ref(null)
+const rawCoverLetterFile = ref(null)
+const rawPortfolioFile = ref(null)
+const rawCertificateFile = ref(null)
+const rawOtherFile = ref(null)
 
 const dynamicQuestions = ref([])
 const dynamicAnswers = ref({})
@@ -41,6 +48,10 @@ const form = ref({
   profession: '',
   cv: null,
   cvFileName: '',
+  coverLetterFileName: '',
+  portfolioFileName: '',
+  certificateFileName: '',
+  otherFileName: '',
   privacyConsent: false,
   identityDocument: '',
   yearsExperience: '',
@@ -95,22 +106,9 @@ function handleFile (e) {
   const file = e.target.files[0]
   if (!file) return
   
-  // Validaciones básicas de tipo y tamaño
-  const allowedTypes = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'image/jpeg',
-    'image/png'
-  ]
-  if (!allowedTypes.includes(file.type)) {
-    errors.value.cvFile = 'Formato de currículum no válido. Solo se permite PDF, Word (.doc, .docx) o imágenes.'
-    rawCvFile.value = null
-    form.value.cvFileName = ''
-    return
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    errors.value.cvFile = 'El archivo no puede superar los 5 MB.'
+  const error = DocumentService.validateFile(file, 'curriculum')
+  if (error) {
+    errors.value.cvFile = error
     rawCvFile.value = null
     form.value.cvFileName = ''
     return
@@ -119,6 +117,45 @@ function handleFile (e) {
   rawCvFile.value = file
   form.value.cvFileName = file.name
   errors.value.cvFile = null
+}
+
+function handleOptionalFile (e, type) {
+  const file = e.target.files[0]
+  if (!file) return
+  
+  const error = DocumentService.validateFile(file, type)
+  if (error) {
+    errors.value[type + 'File'] = error
+    if (type === 'carta_presentacion') {
+      rawCoverLetterFile.value = null
+      form.value.coverLetterFileName = ''
+    } else if (type === 'portafolio') {
+      rawPortfolioFile.value = null
+      form.value.portfolioFileName = ''
+    } else if (type === 'certificado') {
+      rawCertificateFile.value = null
+      form.value.certificateFileName = ''
+    } else if (type === 'otro') {
+      rawOtherFile.value = null
+      form.value.otherFileName = ''
+    }
+    return
+  }
+  
+  errors.value[type + 'File'] = null
+  if (type === 'carta_presentacion') {
+    rawCoverLetterFile.value = file
+    form.value.coverLetterFileName = file.name
+  } else if (type === 'portafolio') {
+    rawPortfolioFile.value = file
+    form.value.portfolioFileName = file.name
+  } else if (type === 'certificado') {
+    rawCertificateFile.value = file
+    form.value.certificateFileName = file.name
+  } else if (type === 'otro') {
+    rawOtherFile.value = file
+    form.value.otherFileName = file.name
+  }
 }
 
 function validate () {
@@ -188,10 +225,17 @@ async function submit () {
     }
   })
 
+  const optionalFiles = {
+    carta_presentacion: rawCoverLetterFile.value,
+    portafolio: rawPortfolioFile.value,
+    certificado: rawCertificateFile.value,
+    otro: rawOtherFile.value
+  }
+
   const app = await applications.submit({
     ...form.value,
     vacancyId: route.params.id
-  }, rawCvFile.value, formattedAnswers)
+  }, rawCvFile.value, formattedAnswers, optionalFiles)
   
   if (app) {
     success.value = true
@@ -384,6 +428,60 @@ async function submit () {
 
               <AppInput v-model="form.linkedinUrl" label="Perfil de LinkedIn" placeholder="https://linkedin.com/in/tuusuario" :error="errors.linkedinUrl" />
               <AppTextarea v-model="form.message" label="Mensaje de presentación" placeholder="Háblanos un poco de ti y por qué te interesa esta vacante..." :rows="4" />
+              
+              <!-- Archivos Adjuntos Adicionales -->
+              <div class="border-t border-stone-100 pt-4 space-y-4">
+                <h4 class="text-xs font-bold text-stone-400 uppercase tracking-wider">Documentos Adjuntos Complementarios</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- Carta de Presentación -->
+                  <div class="space-y-1">
+                    <label class="block text-xs font-semibold text-stone-500 font-body">Carta de Presentación (PDF, Word o Imagen)</label>
+                    <div class="relative border border-dashed border-stone-200 hover:border-brand-400 rounded-lg p-2 text-center cursor-pointer bg-stone-50">
+                      <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp" @change="handleOptionalFile($event, 'carta_presentacion')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      <span class="text-[10px] text-stone-500 font-body block truncate">
+                        {{ form.coverLetterFileName || 'Seleccionar archivo...' }}
+                      </span>
+                    </div>
+                    <p v-if="errors.carta_presentacionFile" class="text-[10px] text-red-500 font-body mt-0.5">{{ errors.carta_presentacionFile }}</p>
+                  </div>
+
+                  <!-- Portafolio -->
+                  <div class="space-y-1">
+                    <label class="block text-xs font-semibold text-stone-500 font-body">Portafolio (PDF, Word o Imagen)</label>
+                    <div class="relative border border-dashed border-stone-200 hover:border-brand-400 rounded-lg p-2 text-center cursor-pointer bg-stone-50">
+                      <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp" @change="handleOptionalFile($event, 'portafolio')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      <span class="text-[10px] text-stone-500 font-body block truncate">
+                        {{ form.portfolioFileName || 'Seleccionar archivo...' }}
+                      </span>
+                    </div>
+                    <p v-if="errors.portafolioFile" class="text-[10px] text-red-500 font-body mt-0.5">{{ errors.portafolioFile }}</p>
+                  </div>
+
+                  <!-- Certificado -->
+                  <div class="space-y-1">
+                    <label class="block text-xs font-semibold text-stone-500 font-body">Certificaciones / Títulos (PDF, Word o Imagen)</label>
+                    <div class="relative border border-dashed border-stone-200 hover:border-brand-400 rounded-lg p-2 text-center cursor-pointer bg-stone-50">
+                      <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp" @change="handleOptionalFile($event, 'certificado')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      <span class="text-[10px] text-stone-500 font-body block truncate">
+                        {{ form.certificateFileName || 'Seleccionar archivo...' }}
+                      </span>
+                    </div>
+                    <p v-if="errors.certificadoFile" class="text-[10px] text-red-500 font-body mt-0.5">{{ errors.certificadoFile }}</p>
+                  </div>
+
+                  <!-- Otro -->
+                  <div class="space-y-1">
+                    <label class="block text-xs font-semibold text-stone-500 font-body">Otros Documentos (PDF, Word o Imagen)</label>
+                    <div class="relative border border-dashed border-stone-200 hover:border-brand-400 rounded-lg p-2 text-center cursor-pointer bg-stone-50">
+                      <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp" @change="handleOptionalFile($event, 'otro')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                      <span class="text-[10px] text-stone-500 font-body block truncate">
+                        {{ form.otherFileName || 'Seleccionar archivo...' }}
+                      </span>
+                    </div>
+                    <p v-if="errors.otroFile" class="text-[10px] text-red-500 font-body mt-0.5">{{ errors.otroFile }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
