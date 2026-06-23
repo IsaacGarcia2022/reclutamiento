@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
@@ -9,6 +9,21 @@ const mobileOpen = ref(false)
 
 function goHome () { router.push('/'); mobileOpen.value = false }
 function logout () { auth.logout(); router.push('/'); mobileOpen.value = false }
+
+const userInitials = computed(() => {
+  const name = auth.currentUser?.name || ''
+  if (!name) return ''
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
+  
+  const firstInitial = parts[0].charAt(0).toUpperCase()
+  let surnameIndex = 1
+  if (parts.length >= 4) {
+    surnameIndex = 2
+  }
+  const secondInitial = parts[surnameIndex].charAt(0).toUpperCase()
+  return firstInitial + secondInitial
+})
 </script>
 
 <template>
@@ -31,7 +46,7 @@ function logout () { auth.logout(); router.push('/'); mobileOpen.value = false }
           <template v-if="auth.isAuthenticated">
             <router-link to="/admin" class="btn-panel">Panel</router-link>
             <div class="divider-v"></div>
-            <span class="user-name">{{ auth.currentUser.name }}</span>
+            <div class="user-avatar" :title="auth.currentUser.name">{{ userInitials }}</div>
             <button @click="logout" class="btn-logout">Cerrar sesión</button>
           </template>
           <template v-else>
@@ -59,7 +74,10 @@ function logout () { auth.logout(); router.push('/'); mobileOpen.value = false }
       <template v-if="auth.isAuthenticated">
         <router-link @click="mobileOpen = false" to="/admin" class="mob-lnk font-semibold">Panel de Control</router-link>
         <div class="mob-user-row">
-          <span class="mob-username">{{ auth.currentUser.name }}</span>
+          <div class="mob-user-info">
+            <div class="user-avatar">{{ userInitials }}</div>
+            <span class="mob-username">{{ auth.currentUser.name }}</span>
+          </div>
           <button @click="logout" class="btn-logout-mob">Cerrar sesión</button>
         </div>
       </template>
@@ -180,6 +198,30 @@ function logout () { auth.logout(); router.push('/'); mobileOpen.value = false }
 .user-name {
   font-size: 0.85rem;
   color: var(--company-text-secondary);
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--company-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.88rem;
+  letter-spacing: -0.01em;
+  box-shadow: 0 2px 4px rgba(21, 79, 93, 0.15);
+  cursor: default;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.mob-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .btn-logout {
