@@ -15,7 +15,7 @@ const response = (body: unknown, status = 200) =>
     headers: { ...cors, 'Content-Type': 'application/json' } 
   })
 
-serve(async request => {
+serve(async (request: Request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: cors })
 
   try {

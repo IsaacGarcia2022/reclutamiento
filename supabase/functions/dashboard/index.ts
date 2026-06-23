@@ -1,10 +1,38 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 
+interface Vacancy {
+  id: string
+  estado: string
+  fecha_cierre?: string | null
+  titulo: string
+  codigo: string
+  area_profesional_id: string
+  cantidad_postulaciones?: number
+}
+
+interface Application {
+  id: string
+  candidato_id: string
+  vacante_id: string
+  created_at: string
+}
+
+interface Candidate {
+  id: string
+  nombres: string
+  apellidos: string
+}
+
+interface CatalogItem {
+  id: string
+  nombre: string
+}
+
 const cors = { 'Access-Control-Allow-Origin': Deno.env.get('APP_URL') || 'http://localhost:5173', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' }
 const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
-serve(async request => {
+serve(async (request: Request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: cors })
   try {
     const token = request.headers.get('Authorization')?.replace('Bearer ', '')
@@ -31,18 +59,22 @@ serve(async request => {
     const failed = [vacancyQuery, appQuery, candidateQuery, catalogQuery, newQuery, monthQuery, closingQuery].find(query => query.error)
     if (failed?.error) throw new Error(failed.error.message)
 
-    const vacancies = vacancyQuery.data || [], apps = appQuery.data || [], candidates = candidateQuery.data || []
-    const applicationsByVacancy: Record<string, number> = {}
-    apps.forEach(app => { applicationsByVacancy[app.vacante_id] = (applicationsByVacancy[app.vacante_id] || 0) + 1 })
-    const vacancyTitle = Object.fromEntries(vacancies.map(vacancy => [vacancy.id, vacancy.titulo]))
-    const candidateName = Object.fromEntries(candidates.map(candidate => [candidate.id, `${candidate.nombres} ${candidate.apellidos}`]))
-    const areaName = Object.fromEntries((catalogQuery.data || []).map(area => [area.id, area.nombre]))
-    const applicationsByArea: Record<string, number> = {}
-    vacancies.forEach(vacancy => { const area = areaName[vacancy.area_profesional_id] || 'Sin área'; applicationsByArea[area] = (applicationsByArea[area] || 0) + (applicationsByVacancy[vacancy.id] || 0) })
-    const byMonth = []
-    for (let offset = 5; offset >= 0; offset--) { const date = new Date(); date.setMonth(date.getMonth() - offset); const key = date.toISOString().slice(0, 7); byMonth.push({ mes: key, total: apps.filter(app => app.created_at?.startsWith(key)).length }) }
-    const topVacancies = vacancies.map(vacancy => ({ ...vacancy, cantidad_postulaciones: applicationsByVacancy[vacancy.id] || 0 })).sort((a, b) => b.cantidad_postulaciones - a.cantidad_postulaciones).slice(0, 6)
+    const vacancies = (vacancyQuery.data || []) as Vacancy[]
+    const apps = (appQuery.data || []) as Application[]
+    const candidates = (candidateQuery.data || []) as Candidate[]
+    const catalogItems = (catalogQuery.data || []) as CatalogItem[]
 
-    return response({ data: { indicadores: { vacantes_activas: vacancies.filter(v => v.estado === 'publicada').length, vacantes_borrador: vacancies.filter(v => v.estado === 'borrador').length, vacantes_proximas_a_cerrar: closingQuery.data?.length || 0, postulaciones_nuevas: newQuery.count || 0, postulaciones_del_mes: monthQuery.count || 0, candidatos_registrados: candidateQuery.count || 0 }, porMes: byMonth, porArea: Object.entries(applicationsByArea).map(([nombre, total]) => ({ nombre, total })).sort((a, b) => b.total - a.total), ultimas: apps.slice(0, 6).map(app => ({ id: app.id, candidate: { nombres: candidateName[app.candidato_id] || 'Candidato', apellidos: '' }, vacancy: { titulo: vacancyTitle[app.vacante_id] || 'Vacante' } })), proximas: closingQuery.data || [], mayorPostulaciones: topVacancies } })
+    const applicationsByVacancy: Record<string, number> = {}
+    apps.forEach((app) => { applicationsByVacancy[app.vacante_id] = (applicationsByVacancy[app.vacante_id] || 0) + 1 })
+    const vacancyTitle = Object.fromEntries(vacancies.map((vacancy) => [vacancy.id, vacancy.titulo]))
+    const candidateName = Object.fromEntries(candidates.map((candidate) => [candidate.id, `${candidate.nombres} ${candidate.apellidos}`]))
+    const areaName = Object.fromEntries(catalogItems.map((area) => [area.id, area.nombre]))
+    const applicationsByArea: Record<string, number> = {}
+    vacancies.forEach((vacancy) => { const area = areaName[vacancy.area_profesional_id] || 'Sin área'; applicationsByArea[area] = (applicationsByArea[area] || 0) + (applicationsByVacancy[vacancy.id] || 0) })
+    const byMonth = []
+    for (let offset = 5; offset >= 0; offset--) { const date = new Date(); date.setMonth(date.getMonth() - offset); const key = date.toISOString().slice(0, 7); byMonth.push({ mes: key, total: apps.filter((app) => app.created_at?.startsWith(key)).length }) }
+    const topVacancies = vacancies.map((vacancy) => ({ ...vacancy, cantidad_postulaciones: applicationsByVacancy[vacancy.id] || 0 })).sort((a, b) => (b.cantidad_postulaciones || 0) - (a.cantidad_postulaciones || 0)).slice(0, 6)
+
+    return response({ data: { indicadores: { vacantes_activas: vacancies.filter((v) => v.estado === 'publicada').length, vacantes_borrador: vacancies.filter((v) => v.estado === 'borrador').length, vacantes_proximas_a_cerrar: closingQuery.data?.length || 0, postulaciones_nuevas: newQuery.count || 0, postulaciones_del_mes: monthQuery.count || 0, candidatos_registrados: candidateQuery.count || 0 }, porMes: byMonth, porArea: Object.entries(applicationsByArea).map(([nombre, total]) => ({ nombre, total })).sort((a, b) => b.total - a.total), ultimas: apps.slice(0, 6).map((app) => ({ id: app.id, candidate: { nombres: candidateName[app.candidato_id] || 'Candidato', apellidos: '' }, vacancy: { titulo: vacancyTitle[app.vacante_id] || 'Vacante' } })), proximas: closingQuery.data || [], mayorPostulaciones: topVacancies } })
   } catch (error) { return response({ error: error instanceof Error ? error.message : String(error) }, 400) }
 })

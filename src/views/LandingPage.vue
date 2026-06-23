@@ -1,299 +1,1630 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const searchKeyword = ref('')
-const activeTab = ref('talento')
 
-const content = computed(() => activeTab.value === 'talento'
-  ? {
-      eyebrow: 'Tu próxima oportunidad comienza aquí',
-      titleStart: 'Encuentra un trabajo que',
-      highlight: 'sí encaje contigo',
-      description: 'Explora oportunidades relevantes, presenta tu perfil de forma profesional y da seguimiento a cada postulación desde un solo lugar.',
-      primary: 'Explorar vacantes',
-      secondary: 'Crear mi perfil',
-      stepsTitle: 'Buscar empleo debería sentirse más claro',
-      stepsDescription: 'Te acompañamos desde la primera búsqueda hasta el contacto con la empresa.',
-      steps: [
-        { number: '01', title: 'Descubre oportunidades', text: 'Filtra vacantes por área, modalidad, ubicación y nivel de experiencia.' },
-        { number: '02', title: 'Presenta tu mejor perfil', text: 'Centraliza tu CV, experiencia y datos profesionales para aplicar con rapidez.' },
-        { number: '03', title: 'Sigue tu proceso', text: 'Consulta el estado de tus postulaciones y mantén todo organizado.' }
-      ]
-    }
-  : {
-      eyebrow: 'Contratación más humana y organizada',
-      titleStart: 'Construye el equipo que',
-      highlight: 'tu empresa necesita',
-      description: 'Publica vacantes, evalúa perfiles y administra cada etapa del proceso con una experiencia clara para reclutadores y candidatos.',
-      primary: 'Publicar una vacante',
-      secondary: 'Conocer la plataforma',
-      stepsTitle: 'Del perfil correcto a la contratación',
-      stepsDescription: 'Un proceso visual y ordenado para tomar mejores decisiones sin perder tiempo.',
-      steps: [
-        { number: '01', title: 'Define el perfil', text: 'Publica requisitos, responsabilidades, modalidad y beneficios de forma clara.' },
-        { number: '02', title: 'Organiza candidatos', text: 'Revisa perfiles y mueve candidatos entre las distintas etapas del proceso.' },
-        { number: '03', title: 'Selecciona con criterio', text: 'Compara información relevante y mantén trazabilidad de cada decisión.' }
-      ]
-    })
-
-function handleSearch () {
-  router.push({ path: '/vacantes', query: { keyword: searchKeyword.value.trim() } })
+function handleSearch() {
+  if (searchKeyword.value.trim()) {
+    router.push({ path: '/vacantes', query: { keyword: searchKeyword.value.trim() } })
+  } else {
+    router.push({ path: '/vacantes' })
+  }
 }
 </script>
 
 <template>
-  <main class="min-h-screen bg-[#f5f7f4] text-[#17282d]">
-    <!-- HERO -->
-    <section class="relative overflow-hidden border-b border-[#dce5e2]">
-      <div class="absolute -right-36 -top-44 h-[34rem] w-[34rem] rounded-full bg-[#dcece5] blur-3xl" />
-      <div class="absolute -left-36 bottom-0 h-80 w-80 rounded-full bg-[#e7ece8] blur-3xl" />
+  <div class="landing-page-container">
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="hero-content-wrapper">
+        <div class="hero-text-block">
+          <div class="hero-eyebrow">Plataforma de reclutamiento inteligente</div>
+          <h1 class="hero-title">
+            Conectamos el <span class="highlight-text">talento ideal</span> con las empresas del futuro
+          </h1>
+          <p class="hero-subtitle">
+            Un ecosistema ágil, transparente y con propósito. Encuentra tu próxima oportunidad profesional o construye tu equipo soñado en tiempo récord.
+          </p>
 
-      <div class="relative mx-auto grid max-w-7xl items-center gap-14 px-5 pb-20 pt-16 sm:px-6 lg:grid-cols-[1.02fr_.98fr] lg:px-8 lg:pb-24 lg:pt-20">
-        <div class="max-w-2xl">
-          <div class="inline-flex rounded-full border border-[#cfddd9] bg-white/80 p-1 shadow-sm backdrop-blur">
-            <button
-              type="button"
-              class="rounded-full px-5 py-2 text-sm font-semibold transition"
-              :class="activeTab === 'talento' ? 'bg-[#154f5d] text-white shadow-sm' : 'text-[#66797d] hover:text-[#154f5d]'"
-              @click="activeTab = 'talento'"
-            >
-              Busco trabajo
-            </button>
-            <button
-              type="button"
-              class="rounded-full px-5 py-2 text-sm font-semibold transition"
-              :class="activeTab === 'empresa' ? 'bg-[#154f5d] text-white shadow-sm' : 'text-[#66797d] hover:text-[#154f5d]'"
-              @click="activeTab = 'empresa'"
-            >
-              Busco talento
-            </button>
+          <!-- Dual CTA Buttons -->
+          <div class="hero-cta-group">
+            <router-link to="/vacantes" class="btn-hero-primary">
+              Buscar empleo
+              <svg class="icon-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </router-link>
           </div>
 
-          <p class="mt-9 text-sm font-bold uppercase tracking-[0.2em] text-[#4f7d70]">
-            {{ content.eyebrow }}
-          </p>
-
-          <h1 class="mt-5 max-w-3xl font-display text-5xl font-extrabold leading-[1.02] tracking-[-0.045em] text-[#17282d] sm:text-6xl lg:text-[4.6rem]">
-            {{ content.titleStart }}
-            <span class="relative block text-[#1d6978]">
-              {{ content.highlight }}
-              <svg class="absolute -bottom-3 left-0 h-4 w-[72%] text-[#a7c9b7]" viewBox="0 0 300 16" fill="none" aria-hidden="true">
-                <path d="M3 11C80 3 187 3 297 8" stroke="currentColor" stroke-width="6" stroke-linecap="round" />
-              </svg>
-            </span>
-          </h1>
-
-          <p class="mt-9 max-w-xl text-lg leading-8 text-[#617276]">
-            {{ content.description }}
-          </p>
-
-          <form
-            v-if="activeTab === 'talento'"
-            class="mt-9 flex max-w-2xl flex-col gap-3 rounded-[1.35rem] border border-[#d6e0dd] bg-white p-2.5 shadow-[0_18px_60px_rgba(28,61,66,0.10)] sm:flex-row"
-            @submit.prevent="handleSearch"
-          >
-            <label class="flex min-w-0 flex-1 items-center gap-3 px-3">
-              <svg class="h-5 w-5 shrink-0 text-[#718589]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-4.35-4.35m1.35-5.15A6.5 6.5 0 115 11.5a6.5 6.5 0 0113 0z" />
+          <!-- Integrated Search Box -->
+          <form class="hero-search-form" @submit.prevent="handleSearch" aria-label="Buscador de empleo rápido">
+            <div class="search-input-wrapper">
+              <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 v-model="searchKeyword"
-                class="w-full bg-transparent py-3 text-sm text-[#17282d] outline-none placeholder:text-[#8a999c]"
-                type="search"
-                placeholder="Cargo, área o palabra clave"
-              >
-            </label>
-            <button class="rounded-2xl bg-[#154f5d] px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#103f4a]">
-              {{ content.primary }}
-            </button>
+                type="text"
+                placeholder="Cargo, palabra clave o modalidad..."
+                class="search-input"
+                aria-label="Buscar vacantes"
+              />
+            </div>
+            <button type="submit" class="btn-search-submit">Buscar</button>
           </form>
 
-          <div v-else class="mt-9 flex flex-col gap-3 sm:flex-row">
-            <router-link to="/login" class="rounded-2xl bg-[#154f5d] px-7 py-4 text-center text-sm font-bold text-white shadow-lg shadow-[#154f5d]/15 transition hover:-translate-y-0.5 hover:bg-[#103f4a]">
-              {{ content.primary }}
-            </router-link>
-            <router-link to="/vacantes" class="rounded-2xl border border-[#bdcdca] bg-white px-7 py-4 text-center text-sm font-bold text-[#29484f] transition hover:border-[#799b93] hover:bg-[#edf3f0]">
-              {{ content.secondary }}
-            </router-link>
-          </div>
-
-          <div class="mt-9 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-[#617276]">
-            <span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#5e927e]" /> Perfiles verificados</span>
-            <span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#5e927e]" /> Proceso organizado</span>
-            <span class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-[#5e927e]" /> Experiencia transparente</span>
+          <!-- Small Trust Badges -->
+          <div class="hero-badges">
+            <span class="hero-badge"><span class="badge-dot dot-positive"></span>Perfiles verificados</span>
+            <span class="hero-badge"><span class="badge-dot dot-warning"></span>Procesos activos</span>
+            <span class="hero-badge"><span class="badge-dot dot-primary"></span>Feedback garantizado</span>
           </div>
         </div>
 
-        <!-- PRODUCT PREVIEW -->
-        <div class="relative mx-auto w-full max-w-[38rem] lg:mx-0 lg:justify-self-end">
-          <div class="absolute -inset-5 rotate-2 rounded-[2.2rem] bg-[#bad4c7]/55" />
-          <div class="relative overflow-hidden rounded-[2rem] border border-white/80 bg-[#edf3f0] p-4 shadow-[0_28px_80px_rgba(29,67,73,0.18)] sm:p-5">
-            <div class="rounded-[1.5rem] bg-white p-4 sm:p-5">
-              <div class="flex items-center justify-between border-b border-[#e5ece9] pb-4">
-                <div>
-                  <p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#78908c]">Panel de selección</p>
-                  <h2 class="mt-1 text-lg font-bold text-[#1b3035]">Diseñador/a de producto</h2>
-                </div>
-                <span class="rounded-full bg-[#e2f0e8] px-3 py-1.5 text-xs font-bold text-[#356b59]">Vacante activa</span>
+        <!-- Hero Abstract Illustration (Diptych 40%) -->
+        <div class="hero-graphic-block" aria-hidden="true">
+          <div class="graphic-canvas">
+            <div class="glass-card-bg"></div>
+            <!-- Interactive Connecting Nodes SVG -->
+            <svg class="abstract-svg-connection" viewBox="0 0 500 500" fill="none">
+              <!-- Grid lines -->
+              <line x1="50" y1="0" x2="50" y2="500" stroke="rgba(21, 79, 93, 0.05)" stroke-width="1" />
+              <line x1="150" y1="0" x2="150" y2="500" stroke="rgba(21, 79, 93, 0.05)" stroke-width="1" />
+              <line x1="250" y1="0" x2="250" y2="500" stroke="rgba(21, 79, 93, 0.05)" stroke-width="1" />
+              <line x1="350" y1="0" x2="350" y2="500" stroke="rgba(21, 79, 93, 0.05)" stroke-width="1" />
+              <line x1="450" y1="0" x2="450" y2="500" stroke="rgba(21, 79, 93, 0.05)" stroke-width="1" />
+              <line x1="0" y1="100" x2="500" y2="100" stroke="rgba(21, 79, 93, 0.05)" stroke-width="1" />
+              <line x1="0" y1="200" x2="500" y2="200" stroke="rgba(21, 79, 93, 0.05)" stroke-width="1" />
+              <line x1="0" y1="300" x2="500" y2="300" stroke="rgba(21, 79, 93, 0.05)" stroke-width="1" />
+              <line x1="0" y1="400" x2="500" y2="400" stroke="rgba(21, 79, 93, 0.05)" stroke-width="1" />
+
+              <!-- Connection curves -->
+              <path class="connection-path-1" d="M100 150 C 200 150, 200 350, 380 350" stroke="var(--company-secondary)" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 6" />
+              <path class="connection-path-2" d="M120 380 C 250 380, 250 200, 380 150" stroke="var(--company-primary)" stroke-width="3" stroke-linecap="round" />
+              <path class="connection-path-3" d="M250 100 Q 300 250 250 400" stroke="rgba(199, 154, 82, 0.4)" stroke-width="2" stroke-dasharray="5 5" />
+
+              <!-- Orbiting rings -->
+              <circle cx="250" cy="250" r="140" stroke="rgba(21, 79, 93, 0.04)" stroke-width="8" />
+              <circle cx="250" cy="250" r="90" stroke="rgba(99, 133, 121, 0.06)" stroke-width="2" />
+
+              <!-- Overlapping central circles representing matching -->
+              <circle class="pulse-circle-primary" cx="210" cy="250" r="60" fill="rgba(21, 79, 93, 0.08)" />
+              <circle class="pulse-circle-secondary" cx="290" cy="250" r="60" fill="rgba(99, 133, 121, 0.12)" />
+
+              <!-- Glowing Node points -->
+              <g class="glow-node" transform="translate(100, 150)">
+                <circle r="14" fill="rgba(21, 79, 93, 0.1)" />
+                <circle r="7" fill="var(--company-primary)" />
+              </g>
+              <g class="glow-node" transform="translate(380, 350)">
+                <circle r="14" fill="rgba(99, 133, 121, 0.15)" />
+                <circle r="7" fill="var(--company-secondary)" />
+              </g>
+              <g class="glow-node" transform="translate(380, 150)">
+                <circle r="14" fill="rgba(199, 154, 82, 0.15)" />
+                <circle r="7" fill="var(--company-warning)" />
+              </g>
+              <g class="glow-node" transform="translate(120, 380)">
+                <circle r="14" fill="rgba(21, 79, 93, 0.1)" />
+                <circle r="7" fill="var(--company-primary)" />
+              </g>
+
+              <!-- Central intersection point -->
+              <circle cx="250" cy="250" r="6" fill="#39735A" />
+              <circle class="glow-pulse" cx="250" cy="250" r="15" stroke="#39735A" stroke-width="2" fill="none" />
+            </svg>
+
+            <!-- Floating statistics widgets to mimic platform preview -->
+            <div class="floating-widget widget-1">
+              <div class="widget-icon bg-pos"><svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="2.5" fill="none"><path d="M20 6L9 17l-5-5" /></svg></div>
+              <div class="widget-details">
+                <span class="widget-title">Candidato Contratado</span>
+                <span class="widget-time">Hace 3 minutos</span>
               </div>
-
-              <div class="mt-5 grid grid-cols-3 gap-3">
-                <div class="rounded-2xl bg-[#f2f6f4] p-3">
-                  <span class="text-2xl font-extrabold text-[#1d6978]">48</span>
-                  <p class="mt-1 text-xs text-[#718084]">Candidatos</p>
-                </div>
-                <div class="rounded-2xl bg-[#f2f6f4] p-3">
-                  <span class="text-2xl font-extrabold text-[#1d6978]">12</span>
-                  <p class="mt-1 text-xs text-[#718084]">En revisión</p>
-                </div>
-                <div class="rounded-2xl bg-[#f2f6f4] p-3">
-                  <span class="text-2xl font-extrabold text-[#1d6978]">5</span>
-                  <p class="mt-1 text-xs text-[#718084]">Entrevistas</p>
-                </div>
-              </div>
-
-              <div class="mt-5 space-y-3">
-                <article class="flex items-center gap-3 rounded-2xl border border-[#e3ebe8] p-3.5">
-                  <div class="grid h-11 w-11 place-items-center rounded-xl bg-[#dcebe6] font-bold text-[#38675d]">AM</div>
-                  <div class="min-w-0 flex-1">
-                    <h3 class="truncate text-sm font-bold text-[#263b40]">Andrea Martínez</h3>
-                    <p class="truncate text-xs text-[#7a898c]">Product Designer · 4 años</p>
-                  </div>
-                  <span class="rounded-full bg-[#e9f3ee] px-3 py-1 text-[11px] font-bold text-[#4d7969]">Entrevista</span>
-                </article>
-
-                <article class="flex items-center gap-3 rounded-2xl border border-[#e3ebe8] p-3.5">
-                  <div class="grid h-11 w-11 place-items-center rounded-xl bg-[#e8ecef] font-bold text-[#526971]">CR</div>
-                  <div class="min-w-0 flex-1">
-                    <h3 class="truncate text-sm font-bold text-[#263b40]">Carlos Rivera</h3>
-                    <p class="truncate text-xs text-[#7a898c]">UX Researcher · 3 años</p>
-                  </div>
-                  <span class="rounded-full bg-[#f5efe1] px-3 py-1 text-[11px] font-bold text-[#8b6c32]">En revisión</span>
-                </article>
-
-                <article class="flex items-center gap-3 rounded-2xl border border-[#e3ebe8] p-3.5">
-                  <div class="grid h-11 w-11 place-items-center rounded-xl bg-[#eee8e4] font-bold text-[#735e54]">LM</div>
-                  <div class="min-w-0 flex-1">
-                    <h3 class="truncate text-sm font-bold text-[#263b40]">Lucía Méndez</h3>
-                    <p class="truncate text-xs text-[#7a898c]">UI Designer · 5 años</p>
-                  </div>
-                  <span class="rounded-full bg-[#edf1f2] px-3 py-1 text-[11px] font-bold text-[#65767a]">Nuevo perfil</span>
-                </article>
-              </div>
+              <span class="widget-badge badge-pos">Activo</span>
             </div>
-          </div>
 
-          <div class="absolute -bottom-5 -left-4 hidden rounded-2xl border border-white bg-white px-4 py-3 shadow-xl sm:block">
-            <p class="text-xs text-[#748387]">Coincidencia del perfil</p>
-            <div class="mt-1 flex items-end gap-2">
-              <strong class="text-2xl text-[#245f69]">92%</strong>
-              <span class="mb-1 text-xs font-semibold text-[#56806f]">Alta afinidad</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TRUST STRIP -->
-    <section class="border-b border-[#dce5e2] bg-white">
-      <div class="mx-auto grid max-w-7xl gap-5 px-5 py-7 text-sm text-[#65777a] sm:grid-cols-3 sm:px-6 lg:px-8">
-        <p><strong class="block text-xl text-[#213a40]">Procesos claros</strong> Cada etapa en un solo lugar</p>
-        <p><strong class="block text-xl text-[#213a40]">Mejores coincidencias</strong> Información relevante primero</p>
-        <p><strong class="block text-xl text-[#213a40]">Experiencia humana</strong> Diseñada para ambas partes</p>
-      </div>
-    </section>
-
-    <!-- PROCESS -->
-    <section class="bg-[#f5f7f4] py-20 lg:py-28">
-      <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-        <div class="grid gap-10 lg:grid-cols-[.72fr_1.28fr] lg:gap-16">
-          <div>
-            <span class="text-xs font-bold uppercase tracking-[0.2em] text-[#4f7d70]">Cómo funciona</span>
-            <h2 class="mt-4 max-w-md font-display text-4xl font-bold leading-tight tracking-[-0.035em] text-[#1a3035] sm:text-5xl">
-              {{ content.stepsTitle }}
-            </h2>
-            <p class="mt-5 max-w-md text-base leading-7 text-[#68797d]">{{ content.stepsDescription }}</p>
-          </div>
-
-          <div class="grid gap-4">
-            <article
-              v-for="step in content.steps"
-              :key="step.number"
-              class="group grid gap-4 rounded-[1.6rem] border border-[#dbe4e1] bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-[#a7c4bb] hover:shadow-[0_18px_50px_rgba(37,72,75,.08)] sm:grid-cols-[4.5rem_1fr_auto] sm:items-center"
-            >
-              <span class="text-sm font-bold tracking-[0.18em] text-[#78a092]">{{ step.number }}</span>
-              <div>
-                <h3 class="text-lg font-bold text-[#263d42]">{{ step.title }}</h3>
-                <p class="mt-1 text-sm leading-6 text-[#738286]">{{ step.text }}</p>
+            <div class="floating-widget widget-2">
+              <div class="widget-icon bg-warn"><svg viewBox="0 0 24 24" width="16" height="16" stroke="white" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+              <div class="widget-details">
+                <span class="widget-title">UX/UI Designer</span>
+                <span class="widget-time">En revisión técnica</span>
               </div>
-              <div class="hidden h-11 w-11 place-items-center rounded-full border border-[#d7e2de] text-[#557873] transition group-hover:bg-[#154f5d] group-hover:text-white sm:grid">→</div>
-            </article>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- BENTO BENEFITS -->
-    <section class="bg-[#172d33] py-20 text-white lg:py-28">
-      <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-        <div class="max-w-2xl">
-          <span class="text-xs font-bold uppercase tracking-[0.2em] text-[#9fc6b6]">Una plataforma con criterio</span>
-          <h2 class="mt-4 font-display text-4xl font-bold tracking-[-0.035em] sm:text-5xl">Menos ruido. Más decisiones útiles.</h2>
-        </div>
-
-        <div class="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          <article class="rounded-[1.7rem] bg-[#214048] p-7 lg:row-span-2">
-            <div class="grid h-12 w-12 place-items-center rounded-2xl bg-[#9fc6b6] text-xl text-[#183139]">◎</div>
-            <h3 class="mt-10 text-2xl font-bold">Una vista completa del proceso</h3>
-            <p class="mt-3 leading-7 text-[#bed0d0]">Consulta vacantes, candidatos, etapas y acciones pendientes sin saltar entre herramientas.</p>
-            <div class="mt-10 rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div class="flex items-center justify-between text-sm text-[#d8e2e1]"><span>Perfiles revisados</span><strong>74%</strong></div>
-              <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div class="h-full w-3/4 rounded-full bg-[#9fc6b6]" /></div>
-            </div>
-          </article>
-
-          <article class="rounded-[1.7rem] bg-[#e5eee9] p-7 text-[#20383d] lg:col-span-2">
-            <span class="text-sm font-bold text-[#527a6c]">Diseño enfocado</span>
-            <h3 class="mt-3 max-w-xl text-2xl font-bold">La información importante aparece primero</h3>
-            <p class="mt-3 max-w-2xl leading-7 text-[#627875]">Jerarquía visual, estados reconocibles y filtros sencillos para reducir esfuerzo y facilitar el seguimiento.</p>
-          </article>
-
-          <article class="rounded-[1.7rem] border border-white/10 bg-white/5 p-7">
-            <span class="text-sm font-bold text-[#9fc6b6]">Para candidatos</span>
-            <h3 class="mt-3 text-xl font-bold">Postulaciones sin incertidumbre</h3>
-            <p class="mt-3 leading-7 text-[#b9cacc]">Un recorrido más claro desde la búsqueda hasta el contacto.</p>
-          </article>
-
-          <article class="rounded-[1.7rem] border border-white/10 bg-white/5 p-7">
-            <span class="text-sm font-bold text-[#9fc6b6]">Para empresas</span>
-            <h3 class="mt-3 text-xl font-bold">Selección sin desorden</h3>
-            <p class="mt-3 leading-7 text-[#b9cacc]">Un flujo visual para evaluar y avanzar candidatos con criterio.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="bg-[#edf2ef] py-20">
-      <div class="mx-auto max-w-5xl px-5 sm:px-6">
-        <div class="relative overflow-hidden rounded-[2rem] bg-[#dceae4] px-6 py-12 text-center sm:px-12 lg:py-16">
-          <div class="absolute -right-16 -top-20 h-56 w-56 rounded-full border-[36px] border-white/30" />
-          <div class="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/25" />
-          <div class="relative">
-            <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#567c70]">Da el siguiente paso</p>
-            <h2 class="mx-auto mt-4 max-w-2xl font-display text-4xl font-bold tracking-[-0.035em] text-[#19333a] sm:text-5xl">
-              El talento correcto merece un proceso a su altura.
-            </h2>
-            <p class="mx-auto mt-5 max-w-xl text-[#627673]">Explora las oportunidades profesionales disponibles y encuentra tu próximo reto.</p>
-            <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <router-link to="/login" class="rounded-2xl bg-[#154f5d] px-7 py-4 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#103f4a]">Acceso interno</router-link>
-              <router-link to="/vacantes" class="rounded-2xl border border-[#aebfbb] bg-white/70 px-7 py-4 text-sm font-bold text-[#28474e] transition hover:bg-white">Explorar vacantes</router-link>
+              <span class="widget-badge badge-warn">En proceso</span>
             </div>
           </div>
         </div>
       </div>
     </section>
-  </main>
+  </div>
 </template>
+
+<style>
+/* VARIABLE DEFINITIONS (COHERENCIA VISUAL SISTEMA DE DISEÑO) */
+:root {
+  --company-primary: #154F5D;
+  --company-primary-dark: #103F4A;
+  --company-secondary: #638579;
+  --company-background: #F4F7F8;
+  --company-surface: #FFFFFF;
+  --company-border: #D7E0E3;
+  --company-text-primary: #263238;
+  --company-text-secondary: #65757C;
+  --company-positive: #39735A;
+  --company-warning: #C79A52;
+  --company-negative: #A65C5C;
+  
+  --spacing-base: 8px;
+  --radius-small: 8px;
+  --radius-large: 12px;
+  --radius-card: 20px;
+}
+
+/* BASE STYLING FOR THE PAGE */
+.landing-page-container {
+  min-height: 100vh;
+  background-color: var(--company-background);
+  color: var(--company-text-primary);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* TYPOGRAPHY */
+.landing-page-container h1,
+.landing-page-container h2,
+.landing-page-container h3,
+.landing-page-container h4 {
+  font-family: 'Sora', sans-serif;
+  color: var(--company-text-primary);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* ACCESSIBILITY: Visible outline on keyboard focus */
+.landing-page-container a:focus-visible,
+.landing-page-container button:focus-visible,
+.landing-page-container input:focus-visible {
+  outline: 2.5px solid var(--company-primary);
+  outline-offset: 3px;
+}
+
+/* HEADER COMPONENT */
+.public-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: rgba(244, 247, 248, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-b: 1px solid var(--company-border);
+  height: 72px;
+  display: flex;
+  align-items: center;
+}
+
+.header-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 calc(var(--spacing-base) * 3);
+  display: flex;
+  justify-content: justify;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 4);
+}
+
+.logo-link {
+  text-decoration: none;
+  font-family: 'Sora', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+}
+
+.logo-primary {
+  color: var(--company-primary);
+}
+
+.logo-secondary {
+  color: var(--company-secondary);
+}
+
+.public-nav {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 3);
+  margin: 0 auto 0 calc(var(--spacing-base) * 2);
+}
+
+.nav-item {
+  color: var(--company-text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: calc(var(--spacing-base) * 1) calc(var(--spacing-base) * 1.5);
+  border-radius: var(--radius-small);
+  transition: all 0.25s ease;
+}
+
+.nav-item:hover {
+  color: var(--company-primary);
+  background-color: rgba(21, 79, 93, 0.04);
+}
+
+.nav-item.active {
+  color: var(--company-primary);
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 2);
+}
+
+.btn-navbar-login {
+  color: var(--company-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: calc(var(--spacing-base) * 1.2) calc(var(--spacing-base) * 2.5);
+  border-radius: var(--radius-small);
+  transition: background-color 0.2s;
+}
+
+.btn-navbar-login:hover {
+  background-color: rgba(21, 79, 93, 0.05);
+}
+
+.btn-navbar-cta {
+  background-color: var(--company-primary);
+  color: white;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: calc(var(--spacing-base) * 1.2) calc(var(--spacing-base) * 2.5);
+  border-radius: var(--radius-small);
+  box-shadow: 0 4px 10px rgba(21, 79, 93, 0.15);
+  transition: all 0.25s ease;
+}
+
+.btn-navbar-cta:hover {
+  background-color: var(--company-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(21, 79, 93, 0.22);
+}
+
+.btn-navbar-admin {
+  background-color: var(--company-secondary);
+  color: white;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: calc(var(--spacing-base) * 1.2) calc(var(--spacing-base) * 2.5);
+  border-radius: var(--radius-small);
+  transition: all 0.25s ease;
+}
+
+.btn-navbar-admin:hover {
+  background-color: #517166;
+  transform: translateY(-1px);
+}
+
+/* HERO SECTION */
+.hero-section {
+  position: relative;
+  padding: calc(var(--spacing-base) * 10) 0 calc(var(--spacing-base) * 14) 0;
+  background: radial-gradient(circle at 80% 20%, rgba(21, 79, 93, 0.06) 0%, rgba(244, 247, 248, 0) 65%), var(--company-background);
+  border-bottom: 1px solid var(--company-border);
+  overflow: hidden;
+}
+
+.hero-content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 calc(var(--spacing-base) * 3);
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 8);
+}
+
+.hero-text-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hero-eyebrow {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--company-secondary);
+  margin-bottom: calc(var(--spacing-base) * 2.5);
+}
+
+.hero-title {
+  font-size: clamp(2.3rem, 5vw, 4.3rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  margin-bottom: calc(var(--spacing-base) * 3);
+}
+
+.highlight-text {
+  color: var(--company-primary);
+  position: relative;
+  display: inline-block;
+}
+
+.highlight-text::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  width: 100%;
+  height: 6px;
+  background-color: rgba(99, 133, 121, 0.25);
+  z-index: -1;
+  border-radius: 4px;
+}
+
+.hero-subtitle {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--company-text-secondary);
+  max-width: 540px;
+  margin-bottom: calc(var(--spacing-base) * 5);
+}
+
+/* Dual CTA buttons */
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 2.5);
+  margin-bottom: calc(var(--spacing-base) * 5);
+  width: 100%;
+  max-width: 500px;
+}
+
+.btn-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--company-primary);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: calc(var(--spacing-base) * 2) calc(var(--spacing-base) * 4);
+  border-radius: var(--radius-large);
+  box-shadow: 0 8px 24px rgba(21, 79, 93, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-hero-primary:hover {
+  background-color: var(--company-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(21, 79, 93, 0.28);
+}
+
+.icon-arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.25s ease;
+}
+
+.btn-hero-primary:hover .icon-arrow {
+  transform: translateX(4px);
+}
+
+.btn-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid var(--company-primary);
+  color: var(--company-primary);
+  background-color: transparent;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: calc(var(--spacing-base) * 1.8) calc(var(--spacing-base) * 4);
+  border-radius: var(--radius-large);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-hero-secondary:hover {
+  background-color: rgba(21, 79, 93, 0.05);
+  transform: translateY(-2px);
+}
+
+/* Integrated Search Box */
+.hero-search-form {
+  display: flex;
+  background-color: var(--company-surface);
+  border: 1px solid var(--company-border);
+  border-radius: calc(var(--radius-large) * 1.5);
+  padding: calc(var(--spacing-base) * 1);
+  box-shadow: 0 10px 35px rgba(28, 61, 66, 0.06);
+  width: 100%;
+  max-width: 540px;
+  margin-bottom: calc(var(--spacing-base) * 4);
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  padding-left: calc(var(--spacing-base) * 2);
+}
+
+.search-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--company-text-secondary);
+  margin-right: calc(var(--spacing-base) * 1.5);
+}
+
+.search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  color: var(--company-text-primary);
+  font-size: 0.95rem;
+  background-color: transparent;
+}
+
+.search-input::placeholder {
+  color: var(--company-text-secondary);
+  opacity: 0.75;
+}
+
+.btn-search-submit {
+  background-color: var(--company-secondary);
+  color: white;
+  border: none;
+  font-weight: 600;
+  padding: calc(var(--spacing-base) * 1.8) calc(var(--spacing-base) * 3.5);
+  border-radius: var(--radius-large);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.25s ease;
+}
+
+.btn-search-submit:hover {
+  background-color: #517166;
+  box-shadow: 0 4px 10px rgba(99, 133, 121, 0.2);
+}
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing-base) * 3);
+  font-size: 0.85rem;
+  color: var(--company-text-secondary);
+}
+
+.hero-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.dot-positive { background-color: var(--company-positive); }
+.dot-warning { background-color: var(--company-warning); }
+.dot-primary { background-color: var(--company-primary); }
+
+/* Hero Graphic block */
+.hero-graphic-block {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.graphic-canvas {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-card);
+}
+
+.glass-card-bg {
+  position: absolute;
+  inset: -15px;
+  background-color: rgba(99, 133, 121, 0.08);
+  border-radius: 40px;
+  transform: rotate(2deg);
+  z-index: 1;
+}
+
+.abstract-svg-connection {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  background-color: var(--company-surface);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-card);
+  box-shadow: 0 30px 70px rgba(29, 67, 73, 0.12);
+}
+
+/* Node flow animation */
+@keyframes dash {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+
+.connection-path-1 {
+  animation: dash 3.5s linear infinite;
+}
+
+/* Pulse scale animation */
+@keyframes scalePulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 0.95; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.pulse-circle-primary {
+  transform-origin: 210px 250px;
+  animation: scalePulse 6s ease-in-out infinite alternate;
+}
+
+.pulse-circle-secondary {
+  transform-origin: 290px 250px;
+  animation: scalePulse 6s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes doublePulse {
+  0% { r: 6px; opacity: 1; }
+  100% { r: 24px; opacity: 0; stroke-width: 1px; }
+}
+
+.glow-pulse {
+  transform-origin: 250px 250px;
+  animation: doublePulse 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+/* Floating Widgets on Hero */
+.floating-widget {
+  position: absolute;
+  z-index: 5;
+  background-color: var(--company-surface);
+  border: 1px solid var(--company-border);
+  border-radius: var(--radius-large);
+  padding: calc(var(--spacing-base) * 1.5) calc(var(--spacing-base) * 2);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 1.5);
+  box-shadow: 0 15px 30px rgba(29, 67, 73, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.floating-widget:hover {
+  transform: translateY(-4px);
+}
+
+.widget-1 {
+  top: 15%;
+  left: -20px;
+}
+
+.widget-2 {
+  bottom: 12%;
+  right: -25px;
+}
+
+.widget-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-small);
+  display: grid;
+  place-items: center;
+}
+
+.bg-pos { background-color: var(--company-positive); }
+.bg-warn { background-color: var(--company-warning); }
+
+.widget-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.widget-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--company-text-primary);
+}
+
+.widget-time {
+  font-size: 0.72rem;
+  color: var(--company-text-secondary);
+}
+
+.widget-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  margin-left: calc(var(--spacing-base) * 1.5);
+}
+
+.badge-pos {
+  background-color: rgba(57, 115, 90, 0.1);
+  color: var(--company-positive);
+}
+
+.badge-warn {
+  background-color: rgba(199, 154, 82, 0.1);
+  color: var(--company-warning);
+}
+
+/* TRUST STRIP */
+.trust-strip {
+  background-color: var(--company-surface);
+  border-bottom: 1px solid var(--company-border);
+  padding: calc(var(--spacing-base) * 4) 0;
+}
+
+.trust-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 calc(var(--spacing-base) * 3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 2.5);
+}
+
+.trust-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--company-text-secondary);
+  letter-spacing: 0.16em;
+}
+
+.logos-grid {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing-base) * 4);
+}
+
+.logo-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+}
+
+.logo-svg {
+  color: var(--company-text-secondary);
+  opacity: 0.45;
+  transition: all 0.3s ease;
+  width: 110px;
+}
+
+.logo-item:hover .logo-svg {
+  opacity: 0.95;
+  color: var(--company-primary);
+  transform: scale(1.03);
+}
+
+/* SECTION HEADER GENERAL */
+.section-header {
+  margin-bottom: calc(var(--spacing-base) * 8);
+  max-width: 700px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.section-eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--company-secondary);
+  margin-bottom: calc(var(--spacing-base) * 1.5);
+  display: inline-block;
+}
+
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  letter-spacing: -0.02em;
+  margin-bottom: calc(var(--spacing-base) * 2);
+}
+
+.section-subtitle {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--company-text-secondary);
+}
+
+/* VALUE DIFFERENTIATED SECTION (ZIG-ZAG LAYOUT) */
+.value-section {
+  padding: calc(var(--spacing-base) * 12) 0;
+  background-color: var(--company-background);
+}
+
+.value-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 calc(var(--spacing-base) * 3);
+}
+
+.zigzag-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 10);
+  margin-bottom: calc(var(--spacing-base) * 12);
+}
+
+.zigzag-row:last-child {
+  margin-bottom: 0;
+}
+
+.zigzag-row.reverse {
+  direction: rtl;
+}
+
+.zigzag-row.reverse .zigzag-text {
+  direction: ltr; /* Reset read order for text block */
+}
+
+.zigzag-row.reverse .zigzag-graphic {
+  direction: ltr;
+}
+
+.zigzag-graphic {
+  display: flex;
+  justify-content: center;
+}
+
+.graphic-frame {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--company-surface);
+  border: 1px solid var(--company-border);
+  border-radius: var(--radius-card);
+  padding: calc(var(--spacing-base) * 3);
+  box-shadow: 0 15px 40px rgba(29, 67, 73, 0.04);
+  transition: transform 0.4s ease;
+}
+
+.graphic-frame:hover {
+  transform: translateY(-5px);
+}
+
+.feature-svg {
+  width: 100%;
+  height: auto;
+}
+
+@keyframes pulseGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 1px rgba(99, 133, 121, 0.2)); }
+  50% { transform: scale(1.02); filter: drop-shadow(0 0 10px rgba(99, 133, 121, 0.4)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 1px rgba(99, 133, 121, 0.2)); }
+}
+
+.pulse-line {
+  animation: dash 6s linear infinite;
+}
+
+.zigzag-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: rgba(99, 133, 121, 0.15); /* 15% opacity secondary color */
+  display: grid;
+  place-items: center;
+  margin-bottom: calc(var(--spacing-base) * 3);
+}
+
+.zigzag-text h3 {
+  font-size: 1.6rem;
+  margin-bottom: calc(var(--spacing-base) * 2);
+}
+
+.zigzag-text p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--company-text-secondary);
+}
+
+/* HOW IT WORKS SECTION */
+.steps-section {
+  padding: calc(var(--spacing-base) * 12) 0;
+  background-color: var(--company-surface);
+  border-top: 1px solid var(--company-border);
+  border-bottom: 1px solid var(--company-border);
+}
+
+.steps-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 calc(var(--spacing-base) * 3);
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(var(--spacing-base) * 4);
+}
+
+.step-card {
+  position: relative;
+  background-color: var(--company-surface);
+  border: 1px solid var(--company-border);
+  border-radius: var(--radius-card);
+  padding: calc(var(--spacing-base) * 5) calc(var(--spacing-base) * 4);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.step-number {
+  position: absolute;
+  top: calc(var(--spacing-base) * 3);
+  right: calc(var(--spacing-base) * 3);
+  font-family: 'Sora', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--company-primary);
+  background-color: rgba(21, 79, 93, 0.06);
+  padding: 4px 10px;
+  border-radius: var(--radius-small);
+}
+
+.step-card-title {
+  font-size: 1.25rem;
+  margin-top: calc(var(--spacing-base) * 2);
+  margin-bottom: calc(var(--spacing-base) * 2);
+}
+
+.step-card-text {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--company-text-secondary);
+  margin-bottom: calc(var(--spacing-base) * 4);
+}
+
+.step-card-arrow {
+  margin-top: auto;
+  color: var(--company-text-secondary);
+  transition: transform 0.25s, color 0.25s;
+}
+
+.step-card:hover {
+  transform: scale(1.02);
+  border-color: var(--company-primary);
+  box-shadow: 0 20px 45px rgba(21, 79, 93, 0.06);
+}
+
+.step-card:hover .step-card-arrow {
+  color: var(--company-primary);
+  transform: translateX(5px);
+}
+
+/* STATISTICS SECTION */
+.stats-section {
+  padding: calc(var(--spacing-base) * 10) 0;
+  background-color: var(--company-primary-dark);
+  color: white;
+}
+
+.stats-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 calc(var(--spacing-base) * 3);
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 8);
+}
+
+.stats-text h2 {
+  color: white;
+  font-size: clamp(1.8rem, 3.5vw, 2.3rem);
+  margin-bottom: calc(var(--spacing-base) * 2.5);
+}
+
+.stats-eyebrow {
+  color: var(--company-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: calc(var(--spacing-base) * 1.5);
+  display: inline-block;
+}
+
+.stats-text p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: calc(var(--spacing-base) * 3);
+}
+
+.stat-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-large);
+  padding: calc(var(--spacing-base) * 4);
+  text-align: center;
+  transition: background-color 0.25s;
+}
+
+.stat-card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.stat-num {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  color: white;
+  margin-bottom: calc(var(--spacing-base) * 1);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* TESTIMONIALS SECTION (STACK CAROUSEL) */
+.testimonials-section {
+  padding: calc(var(--spacing-base) * 12) 0;
+  background-color: var(--company-background);
+  border-bottom: 1px solid var(--company-border);
+}
+
+.testimonials-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 calc(var(--spacing-base) * 3);
+}
+
+.carousel-stack-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: calc(var(--spacing-base) * 6);
+  position: relative;
+}
+
+.testimonial-deck {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  height: 290px;
+}
+
+.testimonial-card-stack {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: var(--company-surface);
+  border: 1px solid var(--company-border);
+  border-radius: var(--radius-card);
+  padding: calc(var(--spacing-base) * 4) calc(var(--spacing-base) * 5);
+  box-shadow: 0 10px 30px rgba(29, 67, 73, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Card Quote Icon */
+.card-quote-icon {
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  font-family: 'Sora', sans-serif;
+  font-size: 5rem;
+  color: rgba(99, 133, 121, 0.12);
+  line-height: 0.8;
+  pointer-events: none;
+}
+
+.testimonial-quote {
+  font-size: 1.12rem;
+  line-height: 1.55;
+  color: var(--company-text-primary);
+  font-style: italic;
+  font-weight: 500;
+  margin-top: calc(var(--spacing-base) * 2);
+}
+
+.testimonial-author-block {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 2);
+  border-top: 1px solid rgba(21, 79, 93, 0.07);
+  padding-top: calc(var(--spacing-base) * 2);
+}
+
+.author-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--company-primary);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.author-info {
+  flex: 1;
+}
+
+.author-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.author-role {
+  font-size: 0.8rem;
+  color: var(--company-text-secondary);
+  margin: 2px 0 0 0;
+}
+
+.testimonial-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 30px;
+}
+
+.badge-company {
+  background-color: rgba(199, 154, 82, 0.12);
+  color: var(--company-warning);
+}
+
+.badge-candidate {
+  background-color: rgba(57, 115, 90, 0.12);
+  color: var(--company-positive);
+}
+
+/* STACK LAYOUT TRANSFORMATIONS */
+.active-slide {
+  transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  opacity: 1;
+  box-shadow: 0 20px 45px rgba(29, 67, 73, 0.08);
+}
+
+.behind-slide-1 {
+  transform: translate3d(24px, 16px, 0) scale(0.96) rotate(1.5deg);
+  opacity: 0.85;
+}
+
+.behind-slide-2 {
+  transform: translate3d(48px, 32px, 0) scale(0.92) rotate(3deg);
+  opacity: 0.55;
+}
+
+.hidden-slide {
+  transform: translate3d(72px, 48px, 0) scale(0.85) rotate(4.5deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Controls */
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing-base) * 4);
+  margin-top: calc(var(--spacing-base) * 6);
+  z-index: 10;
+}
+
+.btn-carousel-control {
+  background-color: var(--company-surface);
+  border: 1px solid var(--company-border);
+  color: var(--company-primary);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+}
+
+.btn-carousel-control:hover {
+  background-color: var(--company-primary);
+  color: white;
+  border-color: var(--company-primary);
+  transform: scale(1.05);
+}
+
+.carousel-indicators {
+  display: flex;
+  gap: 8px;
+}
+
+.carousel-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--company-border);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s ease;
+}
+
+.carousel-indicator-dot.dot-active {
+  background-color: var(--company-primary);
+  width: 20px;
+  border-radius: 4px;
+}
+
+/* BLOG SECTION */
+.blog-section {
+  padding: calc(var(--spacing-base) * 12) 0;
+  background-color: var(--company-surface);
+}
+
+.blog-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 calc(var(--spacing-base) * 3);
+}
+
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(var(--spacing-base) * 4);
+}
+
+.blog-card {
+  background-color: var(--company-surface);
+  border: 1px solid var(--company-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.blog-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--company-primary);
+  box-shadow: 0 20px 40px rgba(21, 79, 93, 0.06);
+}
+
+.blog-card-media {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+}
+
+.blog-placeholder-graphic {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.5s ease;
+}
+
+.blog-card:hover .blog-placeholder-graphic {
+  transform: scale(1.08);
+}
+
+.bg-grad-1 { background: linear-gradient(135deg, #103F4A 0%, #638579 100%); }
+.bg-grad-2 { background: linear-gradient(135deg, #154F5D 0%, #C79A52 100%); }
+.bg-grad-3 { background: linear-gradient(135deg, #638579 0%, #39735A 100%); }
+
+.decor-blog-svg {
+  width: 50%;
+  height: auto;
+}
+
+.blog-card-badge {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.warning-badge { background-color: var(--company-warning); color: white; }
+.positive-badge { background-color: var(--company-positive); color: white; }
+.primary-badge { background-color: var(--company-primary); color: white; }
+
+.blog-card-content {
+  padding: calc(var(--spacing-base) * 3);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.blog-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--company-text-secondary);
+  margin-bottom: calc(var(--spacing-base) * 1.5);
+}
+
+.blog-card-title {
+  font-size: 1.15rem;
+  line-height: 1.35;
+  margin-bottom: calc(var(--spacing-base) * 1.5);
+}
+
+.blog-card-excerpt {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--company-text-secondary);
+  margin-bottom: calc(var(--spacing-base) * 3);
+  flex: 1;
+}
+
+.blog-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--company-primary);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-top: auto;
+}
+
+.link-arrow {
+  transition: transform 0.2s ease;
+}
+
+.blog-card-link:hover .link-arrow {
+  transform: translateX(3px);
+}
+
+/* FOOTER COMPONENT */
+.public-footer {
+  background-color: var(--company-primary-dark);
+  color: white;
+  padding-top: calc(var(--spacing-base) * 10);
+  padding-bottom: calc(var(--spacing-base) * 6);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 calc(var(--spacing-base) * 3);
+}
+
+.footer-newsletter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing-base) * 4);
+  padding-bottom: calc(var(--spacing-base) * 4);
+}
+
+.newsletter-text h3 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: calc(var(--spacing-base) * 1);
+}
+
+.newsletter-text p {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+}
+
+.newsletter-form {
+  width: 100%;
+  max-width: 480px;
+}
+
+.newsletter-field-group {
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-large);
+  padding: 4px;
+}
+
+.newsletter-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  padding: calc(var(--spacing-base) * 1.5) calc(var(--spacing-base) * 2);
+  font-size: 0.9rem;
+}
+
+.newsletter-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.btn-newsletter-submit {
+  background-color: var(--company-secondary);
+  color: white;
+  border: none;
+  font-weight: 600;
+  padding: 0 calc(var(--spacing-base) * 3.5);
+  border-radius: var(--radius-large);
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: background-color 0.2s;
+}
+
+.btn-newsletter-submit:hover {
+  background-color: #517166;
+}
+
+.newsletter-alert {
+  font-size: 0.82rem;
+  margin-top: calc(var(--spacing-base) * 1.5);
+  font-weight: 600;
+}
+
+.success-msg { color: #a7f3d0; }
+.error-msg { color: #fecaca; }
+
+.footer-divider {
+  border: 0;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.08);
+  margin: calc(var(--spacing-base) * 5) 0;
+}
+
+.footer-links-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: calc(var(--spacing-base) * 6);
+  padding-bottom: calc(var(--spacing-base) * 6);
+}
+
+.footer-brand-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--spacing-base) * 3);
+}
+
+.footer-logo {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brand-pitch {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  max-width: 260px;
+}
+
+.social-links {
+  display: flex;
+  gap: calc(var(--spacing-base) * 2);
+}
+
+.social-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.65);
+  display: grid;
+  place-items: center;
+  transition: all 0.25s ease;
+}
+
+.social-icon:hover {
+  background-color: var(--company-secondary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.footer-links-col h4 {
+  color: white;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: calc(var(--spacing-base) * 3);
+}
+
+.footer-links-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-base) * 1.5);
+}
+
+.footer-links-col ul a {
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.footer-links-col ul a:hover {
+  color: white;
+}
+
+.footer-divider-sub {
+  border: 0;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.05);
+  margin: 0 0 calc(var(--spacing-base) * 4) 0;
+}
+
+.footer-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing-base) * 2);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.8rem;
+}
+
+.accessibility-notice {
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 3px 10px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* RESPONSIVE DESIGN (CSS MEDIA QUERIES) */
+@media (max-width: 1024px) {
+  .hero-content-wrapper {
+    grid-template-columns: 1fr;
+    gap: calc(var(--spacing-base) * 6);
+    text-align: center;
+  }
+  
+  .hero-text-block {
+    align-items: center;
+  }
+  
+  .hero-subtitle {
+    max-width: 600px;
+  }
+  
+  .hero-cta-group,
+  .hero-search-form {
+    max-width: 100%;
+  }
+
+  .hero-graphic-block {
+    margin-top: calc(var(--spacing-base) * 4);
+  }
+  
+  .zigzag-row {
+    grid-template-columns: 1fr;
+    gap: calc(var(--spacing-base) * 6);
+    margin-bottom: calc(var(--spacing-base) * 8);
+  }
+  
+  .zigzag-row.reverse {
+    direction: ltr;
+  }
+  
+  .stats-wrapper {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: calc(var(--spacing-base) * 6);
+  }
+  
+  .steps-grid,
+  .blog-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .public-header {
+    height: auto;
+    padding: calc(var(--spacing-base) * 2) 0;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: calc(var(--spacing-base) * 2);
+  }
+  
+  .public-nav {
+    margin: calc(var(--spacing-base) * 1.5) 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: calc(var(--spacing-base) * 1);
+  }
+  
+  .steps-grid,
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-links-grid {
+    grid-template-columns: 1fr;
+    gap: calc(var(--spacing-base) * 4);
+  }
+  
+  .footer-newsletter-row {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .testimonial-deck {
+    height: 380px; /* More vertical space for wrapped text on smaller devices */
+  }
+  
+  .testimonial-card-stack {
+    padding: calc(var(--spacing-base) * 3);
+  }
+  
+  .behind-slide-1 {
+    transform: translate3d(0, 16px, 0) scale(0.96) rotate(1deg);
+  }
+  
+  .behind-slide-2 {
+    transform: translate3d(0, 32px, 0) scale(0.92) rotate(2deg);
+  }
+  
+  .hidden-slide {
+    transform: translate3d(0, 48px, 0) scale(0.85) rotate(3deg);
+  }
+}
+</style>

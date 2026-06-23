@@ -16,7 +16,7 @@ const color = (value: unknown, field: string) => {
   return result
 }
 
-serve(async (request) => {
+serve(async (request: Request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (request.method !== 'POST') return json({ error: 'Método no permitido.' }, 405)
 

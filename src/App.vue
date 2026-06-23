@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import AppNavbar from './components/AppNavbar.vue'
 import AppFooter from './components/AppFooter.vue'
 import { useAuthStore } from './stores/auth'
@@ -7,6 +8,10 @@ import { useCompanyStore } from './stores/company'
 
 const auth = useAuthStore()
 const company = useCompanyStore()
+const route = useRoute()
+
+const showNavbar = computed(() => !route.meta.hideNavbar)
+const showFooter = computed(() => !route.meta.hideFooter)
 
 onMounted(async () => {
   await auth.initialize()
@@ -20,10 +25,11 @@ onMounted(async () => {
 
 <template>
   <div class="flex flex-col min-h-screen">
-    <AppNavbar />
+    <AppNavbar v-if="showNavbar" />
     <main class="flex-1">
       <router-view />
     </main>
-    <AppFooter />
+    <AppFooter v-if="showFooter" />
   </div>
 </template>
+

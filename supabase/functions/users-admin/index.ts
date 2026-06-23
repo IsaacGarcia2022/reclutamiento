@@ -17,7 +17,7 @@ function requiredText (value: unknown, label: string) {
   return value.trim()
 }
 
-serve(async (request) => {
+serve(async (request: Request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (request.method !== 'POST') return json({ error: 'Método no permitido.' }, 405)
 
