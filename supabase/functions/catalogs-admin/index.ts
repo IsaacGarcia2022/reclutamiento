@@ -30,6 +30,13 @@ serve(async (request: Request) => {
       if (error) throw error
       return reply({ data }, 200, origin)
     }
+    if (action === 'toggle') {
+      if (!payload.id || typeof payload.activo !== 'boolean') return reply({ error: 'Estado de catálogo inválido.' }, 400, origin)
+      const { data, error } = await db.from('catalog_items').update({ activo: payload.activo }).eq('id', payload.id).select('id,categoria,nombre,descripcion,activo,parent_id,created_at,updated_at,parent:parent_id(nombre,categoria)').single()
+      if (error) throw error
+      await audit(payload.activo ? 'catalogo_activado' : 'catalogo_desactivado', data.id, { categoria: data.categoria, nombre: data.nombre })
+      return reply({ data }, 200, origin)
+    }
 
     const categoria = cleanText(payload.categoria)
     const nombre = cleanText(payload.nombre)
@@ -58,13 +65,6 @@ serve(async (request: Request) => {
       const { data, error } = await db.from('catalog_items').update({ nombre, descripcion, parent_id: parentId }).eq('id', payload.id).select('id,categoria,nombre,descripcion,activo,parent_id,created_at,updated_at,parent:parent_id(nombre,categoria)').single()
       if (error) throw error
       await audit('catalogo_actualizado', data.id, { categoria, nombre })
-      return reply({ data }, 200, origin)
-    }
-    if (action === 'toggle') {
-      if (!payload.id || typeof payload.activo !== 'boolean') return reply({ error: 'Estado de catálogo inválido.' }, 400, origin)
-      const { data, error } = await db.from('catalog_items').update({ activo: payload.activo }).eq('id', payload.id).select('id,categoria,nombre,descripcion,activo,parent_id,created_at,updated_at,parent:parent_id(nombre,categoria)').single()
-      if (error) throw error
-      await audit(payload.activo ? 'catalogo_activado' : 'catalogo_desactivado', data.id, { categoria: data.categoria, nombre: data.nombre })
       return reply({ data }, 200, origin)
     }
     return reply({ error: 'Operación no reconocida.' }, 400, origin)
