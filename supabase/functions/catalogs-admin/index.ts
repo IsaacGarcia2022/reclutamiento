@@ -21,7 +21,7 @@ serve(async (request: Request) => {
     const { data: { user }, error: authError } = await db.auth.getUser(token)
     if (authError || !user) return reply({ error: 'Sesión inválida.' }, 401, origin)
     const { data: profile } = await db.from('profiles').select('estado, roles!inner(code)').eq('id', user.id).single()
-    if (!profile || profile.estado !== 'activo' || profile.roles?.code !== 'administrador') return reply({ error: 'Solo un administrador puede gestionar catálogos.' }, 403, origin)
+    if (!profile || profile.estado !== 'activo' || (profile.roles as unknown as { code: string })?.code !== 'administrador') return reply({ error: 'Solo un administrador puede gestionar catálogos.' }, 403, origin)
 
     const { action, payload = {} } = await request.json()
     const audit = (event: string, id: string, metadata = {}) => db.from('audit_log').insert({ actor_id: user.id, event_type: event, entity_type: 'catalogo', entity_id: id, metadata })

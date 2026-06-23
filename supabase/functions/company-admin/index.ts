@@ -29,7 +29,7 @@ serve(async (request: Request) => {
     if (authError || !user) return json({ error: 'Sesión no válida.' }, 401)
 
     const { data: profile, error: profileError } = await client.from('profiles').select('estado, roles!inner(code)').eq('id', user.id).single()
-    if (profileError || profile?.estado !== 'activo' || profile.roles?.code !== 'administrador') return json({ error: 'No tienes permiso para modificar la empresa.' }, 403)
+    if (profileError || profile?.estado !== 'activo' || (profile.roles as unknown as { code: string })?.code !== 'administrador') return json({ error: 'No tienes permiso para modificar la empresa.' }, 403)
 
     const { action, payload = {} } = await request.json()
     if (action !== 'update') return json({ error: 'Operación no reconocida.' }, 400)

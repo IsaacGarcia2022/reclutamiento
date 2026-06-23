@@ -39,7 +39,7 @@ serve(async (request: Request) => {
       .select('id, estado, roles!inner(code)')
       .eq('id', actor.id)
       .single()
-    if (actorError || actorProfile?.estado !== 'activo' || actorProfile.roles?.code !== 'administrador') {
+    if (actorError || actorProfile?.estado !== 'activo' || (actorProfile.roles as unknown as { code: string })?.code !== 'administrador') {
       return json({ error: 'No tienes permiso para administrar usuarios.' }, 403)
     }
 

@@ -21,14 +21,14 @@ serve(async (request: Request) => {
 
     if (action === 'record') {
       if (!allowedClientActions.has(payload.accion)) return reply({ error: 'Acción de auditoría no permitida.' }, 400, origin)
-      if (!['administrador', 'recursos_humanos', 'consulta'].includes(profile.roles?.code)) return reply({ error: 'Sin permiso para registrar este evento.' }, 403, origin)
+      if (!['administrador', 'recursos_humanos', 'consulta'].includes((profile.roles as unknown as { code: string })?.code)) return reply({ error: 'Sin permiso para registrar este evento.' }, 403, origin)
       const { error } = await db.from('audit_log').insert({ actor_id: user.id, event_type: payload.accion, entity_type: payload.entidad || null, entity_id: payload.entidadId || null, metadata: payload.valorNuevo || {}, accion: payload.accion, modulo: payload.modulo || 'sistema', entidad: payload.entidad || null, descripcion: payload.descripcion || null, valor_anterior: payload.valorAnterior || null, valor_nuevo: payload.valorNuevo || null })
       if (error) throw error
       return reply({ data: true }, 201, origin)
     }
 
     if (action === 'list') {
-      if (profile.roles?.code !== 'administrador') return reply({ error: 'Solo un administrador puede consultar la auditoría.' }, 403, origin)
+      if ((profile.roles as unknown as { code: string })?.code !== 'administrador') return reply({ error: 'Solo un administrador puede consultar la auditoría.' }, 403, origin)
       const page = Math.max(Number(payload.page) || 1, 1)
       const pageSize = Math.min(Math.max(Number(payload.pageSize) || 25, 1), 100)
       let query = db.from('audit_log').select('id,actor_id,accion,modulo,entidad,entity_id,descripcion,valor_anterior,valor_nuevo,direccion_ip,user_agent,fecha_hora,metadata,actor:actor_id(nombres,apellidos,email)', { count: 'exact' }).order('fecha_hora', { ascending: false })

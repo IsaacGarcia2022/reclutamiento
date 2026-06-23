@@ -198,7 +198,7 @@ function handleSearch() {
   background-color: rgba(244, 247, 248, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-b: 1px solid var(--company-border);
+  border-bottom: 1px solid var(--company-border);
   height: 72px;
   display: flex;
   align-items: center;
