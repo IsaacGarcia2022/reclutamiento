@@ -57,9 +57,17 @@ async function share () { await navigator.clipboard?.writeText(window.location.h
             <h2 class="font-display text-lg font-semibold text-stone-900 mb-2">Descripción</h2>
             <p class="text-stone-600 whitespace-pre-line leading-relaxed">{{ v.description }}</p>
           </div>
+          <div v-if="v.funciones">
+            <h2 class="font-display text-lg font-semibold text-stone-900 mb-2">Funciones</h2>
+            <p class="text-stone-600 whitespace-pre-line leading-relaxed">{{ v.funciones }}</p>
+          </div>
           <div>
             <h2 class="font-display text-lg font-semibold text-stone-900 mb-2">Requisitos</h2>
             <p class="text-stone-600 whitespace-pre-line leading-relaxed">{{ v.requisitos }}</p>
+          </div>
+          <div v-if="v.habilidades_deseadas">
+            <h2 class="font-display text-lg font-semibold text-stone-900 mb-2">Habilidades deseadas</h2>
+            <p class="text-stone-600 whitespace-pre-line leading-relaxed">{{ v.habilidades_deseadas }}</p>
           </div>
         </div>
 

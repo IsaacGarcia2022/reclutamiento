@@ -213,10 +213,10 @@ async function save (estado = 'borrador') {
         </label>
         <AppInput v-model="form.fechaPublicacion" label="Fecha de publicación" type="date" />
         <AppInput v-model="form.fechaCierre" label="Fecha límite" type="date" />
-        <label class="text-sm font-medium font-body">
+        <!--<label class="text-sm font-medium font-body">
           Imagen de vacante
           <input class="mt-2 block text-sm" type="file" accept="image/*" @change="e => image = e.target.files[0]" />
-        </label>
+        </label>-->
       </div>
 
       <!-- SECCIÓN: Preguntas Adicionales -->
