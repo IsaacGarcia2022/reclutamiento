@@ -23,35 +23,6 @@ function handleNewsletterSubmit() {
 <template>
   <footer class="public-footer">
     <div class="footer-container">
-      <!-- Top bar with Newsletter -->
-      <div class="footer-newsletter-row">
-        <div class="newsletter-text">
-          <h3>Mantente a la vanguardia</h3>
-          <p>Suscríbete para recibir tendencias y análisis sobre reclutamiento tecnológico.</p>
-        </div>
-        <form class="newsletter-form" @submit.prevent="handleNewsletterSubmit" novalidate>
-          <div class="newsletter-field-group">
-            <input
-              v-model="newsletterEmail"
-              type="email"
-              placeholder="Ingresa tu correo electrónico"
-              class="newsletter-input"
-              aria-label="Correo electrónico para newsletter"
-              required
-            />
-            <button type="submit" class="btn-newsletter-submit">Suscribirme</button>
-          </div>
-          <p v-if="newsletterSuccess" class="newsletter-alert success-msg" role="alert">
-            ✓ ¡Suscripción exitosa! Te enviaremos novedades pronto.
-          </p>
-          <p v-if="newsletterError" class="newsletter-alert error-msg" role="alert">
-            ⚠ Por favor ingresa un correo electrónico válido.
-          </p>
-        </form>
-      </div>
-
-      <hr class="footer-divider" />
-
       <!-- Navigation and Info Grid -->
       <div class="footer-links-grid">
         <div class="footer-brand-col">
@@ -110,13 +81,6 @@ function handleNewsletterSubmit() {
             <li><router-link to="/solicitar-eliminacion">Eliminar Datos</router-link></li>
           </ul>
         </div>
-      </div>
-
-      <hr class="footer-divider-sub" />
-
-      <div class="footer-bottom-row">
-        <p>&copy; {{ new Date().getFullYear() }} PortalEmpleo. Todos los derechos reservados.</p>
-        <p class="accessibility-notice">Diseño optimizado para accesibilidad (WCAG 2.1 AA)</p>
       </div>
     </div>
   </footer>
