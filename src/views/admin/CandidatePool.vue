@@ -550,7 +550,9 @@ const potentialDuplicates = computed(() => {
             <div>
               <div class="flex items-start justify-between gap-2">
                 <div>
-                  <h3 class="font-display font-bold text-base text-stone-900 leading-tight">{{ cand.name }}</h3>
+                  <router-link :to="'/admin/candidatos/' + cand.id" class="font-display font-bold text-base text-stone-900 hover:text-brand-600 transition-colors leading-tight block">
+                    {{ cand.name }}
+                  </router-link>
                   <p class="text-xs text-stone-500 mt-1 font-body">{{ cand.profession }}</p>
                 </div>
                 <span class="text-[10px] bg-stone-100 text-stone-500 font-mono px-2 py-0.5 rounded-full shrink-0">
