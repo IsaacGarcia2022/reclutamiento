@@ -9,6 +9,8 @@ const store = useVacanciesStore()
 onMounted(() => store.fetchById(route.params.id))
 
 const v = computed(() => store.current)
+const copied = computed(() => false)
+async function share () { await navigator.clipboard?.writeText(window.location.href) }
 </script>
 
 <template>
@@ -35,8 +37,8 @@ const v = computed(() => store.current)
             <p class="text-lg text-brand-600 font-medium mt-1">{{ v.company }}</p>
           </div>
           <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium font-mono"
-            :class="v.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-stone-100 text-stone-500'">
-            {{ v.status === 'active' ? 'Activa' : 'Inactiva' }}
+            :class="v.status === 'publicada' ? 'bg-sage-50 text-sage-700' : 'bg-stone-100 text-stone-500'">
+            {{ v.status === 'publicada' ? 'Publicada' : v.status }}
           </span>
         </div>
 
@@ -47,6 +49,7 @@ const v = computed(() => store.current)
           </span>
           <span v-if="v.type" class="inline-flex items-center gap-1.5 bg-stone-100 px-3 py-1.5 rounded-lg text-sm text-stone-600 font-mono">{{ v.type }}</span>
           <span v-if="v.salary" class="inline-flex items-center gap-1.5 bg-brand-50 px-3 py-1.5 rounded-lg text-sm font-semibold text-brand-700 font-mono">{{ v.salary }}</span>
+          <span v-if="v.fecha_cierre" class="inline-flex items-center gap-1.5 bg-coral-50 px-3 py-1.5 rounded-lg text-sm font-semibold text-coral-700">Postula hasta el {{ new Date(`${v.fecha_cierre}T00:00:00`).toLocaleDateString('es-SV') }}</span>
         </div>
 
         <div class="mt-8 space-y-6">
@@ -64,11 +67,12 @@ const v = computed(() => store.current)
           Publicada el {{ new Date(v.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) }}
         </div>
 
-        <div class="mt-8" v-if="v.status === 'active'">
+        <div class="mt-8" v-if="v.status === 'publicada'">
           <router-link :to="`/vacantes/${v.id}/postular`"
             class="btn-accent px-8 py-3 text-base">
             Postularme a esta vacante
           </router-link>
+          <button @click="share" class="ml-3 rounded-xl border border-stone-200 px-4 py-3 text-sm font-semibold text-stone-600">Compartir enlace</button>
         </div>
       </div>
     </template>

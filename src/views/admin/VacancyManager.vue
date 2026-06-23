@@ -1,78 +1,8 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useVacanciesStore } from '../../stores/vacancies'
-
-const store = useVacanciesStore()
-const confirmDelete = ref(null)
-
-onMounted(() => store.fetchAll())
-
-async function handleToggle (id) {
-  await store.toggleStatus(id)
-}
-
-async function handleDelete (id) {
-  await store.delete(id)
-  confirmDelete.value = null
-}
+const store=useVacanciesStore(); const action=ref(null); const labels={borrador:'Borrador',publicada:'Publicada',pausada:'Pausada',cerrada:'Cerrada',archivada:'Archivada'}
+onMounted(()=>store.fetchAdmin())
+async function run(){const {v,estado,type}=action.value;if(type==='duplicate')await store.duplicate(v.id);else await store.transition(v.id,estado);action.value=null}
 </script>
-
-<template>
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="font-display text-xl font-bold text-stone-900">Mis vacantes</h2>
-      <router-link to="/admin/vacantes/nueva" class="btn-primary px-4 py-2.5 text-sm">
-        + Nueva
-      </router-link>
-    </div>
-
-    <div v-if="store.loading" class="text-center py-12">
-      <div class="w-8 h-8 border-2 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto"></div>
-      <p class="mt-4 text-sm text-stone-400">Cargando...</p>
-    </div>
-
-    <div v-else-if="store.list.length === 0" class="card border border-stone-100 p-10 text-center">
-      <p class="text-stone-500 font-medium">Aún no has creado ninguna vacante.</p>
-      <router-link to="/admin/vacantes/nueva" class="btn-primary mt-4 inline-flex px-5 py-2.5 text-sm">Crear primera vacante</router-link>
-    </div>
-
-    <div v-else class="space-y-3">
-      <div v-for="v in store.list" :key="v.id" class="card border border-stone-100 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div class="min-w-0">
-          <h3 class="font-display font-semibold text-stone-900">{{ v.title }}</h3>
-          <p class="text-sm text-stone-500 mt-0.5 font-body">{{ v.company }} &middot; {{ v.location || 'Sin ubicación' }}</p>
-          <p class="text-xs text-stone-400 mt-1 font-mono">
-            {{ v.status === 'active' ? 'Activa' : 'Inactiva' }} &middot; {{ new Date(v.createdAt).toLocaleDateString('es-ES') }}
-          </p>
-        </div>
-        <div class="flex items-center gap-2 shrink-0 flex-wrap">
-          <button @click="handleToggle(v.id)"
-            class="text-xs px-3 py-1.5 rounded-lg font-medium transition-all duration-200"
-            :class="v.status === 'active' ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100' : 'bg-green-50 text-green-700 hover:bg-green-100'">
-            {{ v.status === 'active' ? 'Desactivar' : 'Activar' }}
-          </button>
-          <router-link :to="`/admin/vacantes/${v.id}/editar`" class="text-xs bg-stone-100 text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-200 transition-all duration-200 font-medium">
-            Editar
-          </router-link>
-          <router-link :to="`/admin/vacantes/${v.id}/postulaciones`" class="text-xs bg-brand-50 text-brand-600 px-3 py-1.5 rounded-lg hover:bg-brand-100 transition-all duration-200 font-medium">
-            Postulaciones
-          </router-link>
-          <button @click="confirmDelete = v.id" class="text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-all duration-200 font-medium">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="confirmDelete" class="fixed inset-0 bg-stone-900/40 flex items-center justify-center z-50 p-4" @click.self="confirmDelete = null">
-      <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-        <h3 class="font-display font-semibold text-stone-900 text-lg">¿Eliminar vacante?</h3>
-        <p class="text-sm text-stone-500 mt-2 font-body">Esta acción no se puede deshacer. También se eliminarán las postulaciones asociadas.</p>
-        <div class="flex gap-3 mt-5 justify-end">
-          <button @click="confirmDelete = null" class="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-800 transition-colors">Cancelar</button>
-          <button @click="handleDelete(confirmDelete)" class="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-200">Eliminar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
+<template><div><div class="mb-6 flex items-center justify-between"><div><h2 class="font-display text-xl font-bold text-stone-900">Vacantes</h2><p class="mt-1 text-sm text-stone-500">Gestiona publicaciones y su visibilidad pública.</p></div><router-link to="/admin/vacantes/nueva" class="btn-primary px-4 py-2.5 text-sm">+ Nueva vacante</router-link></div><p v-if="store.error" class="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{{store.error}}</p><div v-if="store.loading" class="py-12 text-center text-stone-400">Cargando vacantes...</div><div v-else class="space-y-3"><article v-for="v in store.list" :key="v.id" class="card flex flex-col gap-4 border border-stone-100 p-5 lg:flex-row lg:items-center lg:justify-between"><div><div class="flex items-center gap-2"><h3 class="font-display font-semibold text-stone-900">{{v.title}}</h3><span class="rounded-full bg-brand-50 px-2 py-1 text-xs font-semibold text-brand-700">{{labels[v.status]}}</span></div><p class="mt-1 text-sm text-stone-500">{{v.codigo}} · {{v.location||'Sin ubicación'}} · {{v.type||'Sin modalidad'}}</p><p class="mt-1 text-xs text-stone-400">{{v.cantidad_postulaciones}} postulaciones · {{new Date(v.createdAt).toLocaleDateString('es-SV')}}</p></div><div class="flex flex-wrap gap-2"><router-link :to="`/admin/vacantes/${v.id}/editar`" class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-700">Editar</router-link><router-link :to="`/admin/vacantes/${v.id}/postulaciones`" class="rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700">Postulaciones</router-link><select class="rounded-lg bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-700" @change="e=>{const value=e.target.value;e.target.value=''; if(value==='duplicate')action={v,type:'duplicate'};else if(value)action={v,type:'status',estado:value}}"><option value="">Acciones</option><option value="duplicate">Duplicar</option><option v-if="v.status==='borrador'||v.status==='pausada'" value="publicada">Publicar</option><option v-if="v.status==='publicada'" value="pausada">Pausar</option><option v-if="v.status==='publicada'||v.status==='pausada'" value="cerrada">Cerrar</option><option v-if="v.status!=='archivada'" value="archivada">Archivar</option></select></div></article></div><div v-if="action" class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 p-4"><div class="w-full max-w-sm rounded-2xl bg-white p-6"><h3 class="font-display text-lg font-bold">Confirmar acción</h3><p class="mt-2 text-sm text-stone-500">¿Deseas {{action.type==='duplicate'?'duplicar':'cambiar el estado de'}} la vacante <strong>{{action.v.title}}</strong>?</p><div class="mt-6 flex justify-end gap-3"><button @click="action=null" class="text-sm">Cancelar</button><button @click="run" class="btn-primary px-4 py-2 text-sm">Confirmar</button></div></div></div></div></template>

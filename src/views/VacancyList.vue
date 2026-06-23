@@ -6,7 +6,7 @@ import FilterBar from '../components/FilterBar.vue'
 
 const store = useVacanciesStore()
 
-onMounted(() => store.fetchAll())
+onMounted(async () => { await Promise.all([store.fetchAll(), store.fetchCatalogs()]) })
 </script>
 
 <template>
