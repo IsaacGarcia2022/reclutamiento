@@ -263,6 +263,7 @@ async function submit () {
 
   const app = await applications.submit({
     ...form.value,
+    privacyConsent: form.value.consentPrivacyPolicy,
     vacancyId: route.params.id
   }, rawCvFile.value, formattedAnswers, optionalFiles, consents)
   
