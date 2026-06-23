@@ -822,57 +822,108 @@ function exportPDF() {
     transform: translateY(0);
   }
 }
+</style>
 
-/* Reglas y estilos específicos para Impresión PDF */
+<style>
+/* Reglas y estilos específicos para Impresión PDF (Globales) */
 @media print {
   /* Ocultar elementos de layout global, navegación, menús y botones */
-  nav, footer, aside, header, .no-print,
+  nav,
+  footer,
+  aside,
+  header,
+  .no-print,
   .notification-container,
-  .max-w-7xl > div:first-child {
+  .global-navbar,
+  .public-footer {
     display: none !important;
   }
   
-  /* Desactivar flexbox y re-escribir el flujo a bloque para evitar cortes */
-  body, html, #app, .flex, .min-h-screen, main, .max-w-7xl, .flex-1, .flex-col, .md\:flex-row {
+  /* Desactivar flexbox, overflows y alturas fijas en la estructura de layouts padre */
+  html,
+  body,
+  #app,
+  #app > div,
+  #app > div > main,
+  #app > div > main > div,
+  #app > div > main > div > div,
+  #app > div > main > div > div > main {
     background: #fff !important;
     color: #000 !important;
     padding: 0 !important;
     margin: 0 !important;
     max-width: 100% !important;
+    width: 100% !important;
     display: block !important;
     box-shadow: none !important;
     border: none !important;
+    height: auto !important;
     min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
   }
 
-  /* Asegurar que el contenedor de reporte ocupe toda la anchura */
+  /* Asegurar que el contenedor de reporte ocupe toda la anchura y fluya libremente */
   #printable-report-area {
     display: block !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     position: static !important;
+    overflow: visible !important;
   }
 
-  /* Evitar saltos de página y sombras en tarjetas */
-  .card, tr, article {
+  /* Forzar colores de fondo y degradados en la impresión (gráficos, tarjetas, etc.) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Evitar saltos de página dentro de tarjetas y añadir bordes limpios */
+  .card, 
+  article, 
+  section {
     page-break-inside: avoid !important;
     box-shadow: none !important;
     border: 1px solid #d7e0e3 !important;
     background: #fff !important;
+    margin-bottom: 24px !important;
+    padding: 24px !important;
   }
 
-  /* Tablas limpias con bordes definidos */
+  /* Distribuir KPIs en 3 columnas en la hoja impresa */
+  #printable-report-area .grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+    gap: 16px !important;
+  }
+
+  /* Tablas limpias para reporte impreso, repitiendo encabezados en cada página */
   table {
     border-collapse: collapse !important;
     width: 100% !important;
     border: 1px solid #ccc !important;
+    page-break-inside: auto !important;
+  }
+  
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  thead {
+    display: table-header-group !important;
   }
   
   th, td {
     border: 1px solid #ccc !important;
-    padding: 6px 10px !important;
+    padding: 8px 12px !important;
     color: #000 !important;
+    font-size: 11px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
   }
 }
 </style>
+
