@@ -393,7 +393,7 @@ function formatDate(dateStr) {
                 type="button" 
                 @click="processAndPurgeData"
                 :disabled="processing || selectedRequest.estado === 'completada'"
-                class="bg-red-650 hover:bg-red-700 text-white font-bold font-display px-4 py-2.5 rounded-xl text-xs shadow-sm transition disabled:opacity-50"
+                class="bg-red-600 hover:bg-red-700 text-white font-bold font-display px-4 py-2.5 rounded-xl text-xs shadow-sm transition disabled:opacity-50"
               >
                 Procesar y Purgar Candidato
               </button>

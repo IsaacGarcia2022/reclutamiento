@@ -3,7 +3,7 @@ import { getSupabaseClient } from './supabase'
 export default {
   async registerConsents (consentsList) {
     const client = getSupabaseClient()
-    const { data, error } = await client.from('consents').insert(consentsList).select()
+    const { data, error } = await client.from('consents').insert(consentsList)
     if (error) {
       console.error('Error registering consents:', error)
       throw new Error('No fue posible registrar el consentimiento de privacidad.')
@@ -15,7 +15,7 @@ export default {
     const { data, error } = await client.from('data_deletion_requests').insert({
       correo: payload.correo,
       motivo: payload.motivo
-    }).select().single()
+    })
     if (error) {
       console.error('Error requesting data deletion:', error)
       throw new Error('No fue posible enviar la solicitud de eliminación.')
