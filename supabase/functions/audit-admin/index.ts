@@ -1,14 +1,17 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 
-const appUrl = Deno.env.get('APP_URL') || 'http://localhost:5173'
-const cors = (origin: string | null) => ({ 'Access-Control-Allow-Origin': [appUrl, 'http://localhost:5173', 'http://127.0.0.1:5173'].includes(origin || '') ? origin! : appUrl, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' })
-const reply = (body: unknown, status = 200, origin: string | null = null) => new Response(JSON.stringify(body), { status, headers: { ...cors(origin), 'Content-Type': 'application/json' } })
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE'
+}
+const reply = (body: unknown, status = 200, _origin: string | null = null) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 const allowedClientActions = new Set(['consulta_postulacion', 'exportacion_reporte'])
 
 serve(async (request: Request) => {
   const origin = request.headers.get('Origin')
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: cors(origin) })
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   try {
     const token = request.headers.get('Authorization')?.replace('Bearer ', '')
     if (!token) return reply({ error: 'Sesión requerida.' }, 401, origin)

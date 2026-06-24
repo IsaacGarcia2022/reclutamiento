@@ -4,9 +4,9 @@ import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 
 
 const cors = {
-  'Access-Control-Allow-Origin': Deno.env.get('APP_URL') || 'http://localhost:5173',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE'
 }
 
 const response = (body: unknown, status = 200) => 

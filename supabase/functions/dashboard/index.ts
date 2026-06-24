@@ -29,7 +29,11 @@ interface CatalogItem {
   nombre: string
 }
 
-const cors = { 'Access-Control-Allow-Origin': Deno.env.get('APP_URL') || 'http://localhost:5173', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' }
+const cors = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE'
+}
 const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
 serve(async (request: Request) => {
